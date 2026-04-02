@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰語隨身練 - 全域搜尋版</title>
+    <title>泰語隨身練</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -14,6 +14,7 @@
             --btn-inactive: #3a3a3a;
             --btn-active: #3498db;
             --search-bg: #333;
+            --link-color: #2ecc71;
         }
 
         body { 
@@ -33,7 +34,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             position: sticky;
             top: 0;
             background: var(--bg-color);
@@ -59,7 +60,26 @@
             color: white;
         }
 
-        /* 搜尋框樣式 */
+        /* 外部連結按鈕 */
+        .extra-controls {
+            width: 100%;
+            max-width: 450px;
+            margin-bottom: 15px;
+        }
+
+        .nav-btn {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #555;
+            background: #222;
+            color: #ccc;
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 搜尋框 */
         .search-container {
             width: 100%;
             max-width: 450px;
@@ -78,11 +98,7 @@
             outline: none;
         }
 
-        #search-input:focus {
-            border-color: var(--btn-active);
-        }
-
-        /* 卡片樣式 */
+        /* 卡片與內容 */
         .card { 
             background: var(--card-bg); 
             border-radius: 18px; 
@@ -98,7 +114,6 @@
             position: relative;
         }
 
-        /* 顯示來源標籤 */
         .source-tag {
             position: absolute;
             top: 8px;
@@ -107,8 +122,6 @@
             color: var(--btn-active);
             opacity: 0.7;
         }
-
-        .content-area { flex: 1; text-align: left; padding-right: 8px; }
 
         .thai { 
             font-size: 2.05rem; 
@@ -126,21 +139,62 @@
             font-size: 1.9rem; cursor: pointer; min-width: 55px;
         }
 
+        /* 外部連結頁面 (Overlay) */
+        #link-page {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .link-item {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--link-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .close-btn {
+            margin-top: 30px;
+            background: #e74c3c;
+            color: white;
+            padding: 12px 40px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
         #loading { margin-top: 50px; font-size: 1.1rem; color: var(--sub-text); }
-        #search-info { color: var(--sub-text); margin-bottom: 10px; font-size: 0.9rem; }
+        #search-info { color: var(--sub-text); margin-bottom: 10px; font-size: 0.9rem; width: 100%; max-width: 450px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="source-selector">
         <button class="source-btn active" onclick="switchMode('random')">隨機10句</button>
-        <button id="btn-custom" class="source-btn" onclick="switchSource('custom')">網抓</button>
-        <button id="btn-thai2" class="source-btn" onclick="switchSource('thai2')">泰二</button>
-        <button id="btn-time" class="source-btn" onclick="switchSource('time')">時間</button>
-        <button id="btn-month" class="source-btn" onclick="switchSource('month')">月份</button>
-        <button id="btn-week" class="source-btn" onclick="switchSource('week')">星期</button>
-        <button id="btn-color" class="source-btn" onclick="switchSource('color')">顏色</button>
-        <button id="btn-ben" class="source-btn" onclick="switchSource('ben')">Ben</button>
+        <button class="source-btn" onclick="switchSource('custom')">網抓</button>
+        <button class="source-btn" onclick="switchSource('thai2')">泰二</button>
+        <button class="source-btn" onclick="switchSource('time')">時間</button>
+        <button class="source-btn" onclick="switchSource('month')">月份</button>
+        <button class="source-btn" onclick="switchSource('week')">星期</button>
+        <button class="source-btn" onclick="switchSource('color')">顏色</button>
+        <button class="source-btn" onclick="switchSource('ben')">Ben</button>
+    </div>
+
+    <div class="extra-controls">
+        <button class="nav-btn" onclick="toggleLinkPage(true)">🔗 外部連結</button>
     </div>
 
     <div class="search-container">
@@ -150,6 +204,13 @@
     <div id="search-info"></div>
     <div id="loading">正在同步所有分頁資料...</div>
     <div id="app"></div>
+
+    <div id="link-page">
+        <h2 style="margin-bottom: 30px;">外部資源</h2>
+        <a href="https://thai-alphabet.com/" target="_blank" class="link-item">thai-alphabet</a>
+        <a href="https://www.thai2english.com/" target="_blank" class="link-item">thai2english</a>
+        <button class="close-btn" onclick="toggleLinkPage(false)">返回練習</button>
+    </div>
 
     <script>
         const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
@@ -163,10 +224,13 @@
             ben: { name: "Ben", id: "296346577" }
         };
 
-        let allData = []; // 儲存所有分頁彙整後的資料
+        let allData = [];
         let isLoaded = false;
 
-        // 初始化：一次抓取所有資料
+        function toggleLinkPage(show) {
+            document.getElementById('link-page').style.display = show ? 'flex' : 'none';
+        }
+
         async function initAllData() {
             try {
                 const fetchPromises = Object.keys(gids).map(async (key) => {
@@ -187,13 +251,28 @@
                 allData = results.flat();
                 isLoaded = true;
                 document.getElementById('loading').style.display = 'none';
-                displayRandom(); // 預設顯示隨機
+                displayRandom();
             } catch (e) {
                 document.getElementById('loading').innerText = '同步失敗，請重新整理';
             }
         }
 
-        // 切換模式（隨機或特定分頁）
+        function handleSearch() {
+            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!keyword) {
+                displayRandom();
+                document.getElementById('search-info').innerText = '';
+                return;
+            }
+            const results = allData.filter(item => 
+                (item.thai && item.thai.toLowerCase().includes(keyword)) || 
+                (item.chinese && item.chinese.toLowerCase().includes(keyword))
+            );
+            renderList(results);
+            document.getElementById('search-info').innerText = `搜尋結果：${results.length} 筆`;
+            document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
         function switchMode(mode) {
             document.getElementById('search-input').value = '';
             document.getElementById('search-info').innerText = '';
@@ -206,29 +285,9 @@
             document.getElementById('search-input').value = '';
             document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            
             const filtered = allData.filter(item => item.source === gids[key].name);
             renderList(filtered.sort(() => 0.5 - Math.random()).slice(0, 10));
             document.getElementById('search-info').innerText = `目前顯示：${gids[key].name} (隨機10句)`;
-        }
-
-        // 搜尋邏輯
-        function handleSearch() {
-            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
-            if (!keyword) {
-                displayRandom();
-                document.getElementById('search-info').innerText = '';
-                return;
-            }
-
-            const results = allData.filter(item => 
-                item.thai.toLowerCase().includes(keyword) || 
-                item.chinese.toLowerCase().includes(keyword)
-            );
-
-            renderList(results);
-            document.getElementById('search-info').innerText = `搜尋結果：${results.length} 筆`;
-            document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
         }
 
         function displayRandom() {

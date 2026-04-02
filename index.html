@@ -25,7 +25,6 @@
             align-items: center;
         }
 
-        /* 恢復為 4 個按鈕的 Grid 排列 */
         .source-selector {
             width: 100%;
             max-width: 450px;
@@ -127,11 +126,16 @@
     <div id="app"></div>
 
     <script>
-        const sources = {
-            custom: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv",
-            thai2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjm7j2vq2047v5aLY3tNBU_va83hqS9u6_skG35lTdtVxK4nCNC7qRoePHg_FsbdxvjbkR0s-JxmNt/pub?output=csv",
-            time: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3bHaY_7eyJ7RBHZl22Gr-y7gH6Is3oCL6CKS5x4qQpAopl4i2bsS2Xk6N7xgUK3n5o5A1_xUd9ab-/pub?output=csv",
-            ben: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTA2sY9XzLuD8nsn6cv75mBv5_izZrVYxnykdMhdK4PKoCtZ2q-7x_R8xg5NIRhzXPNNBj1qjWSAHG0/pub?output=csv"
+        // 同一個試算表的主連結（金鑰）
+        const spreadsheetId = "1RuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu";
+        const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
+
+        // 不同的分頁 ID (gid)
+        const gids = {
+            custom: "538865502",
+            thai2: "2060107803",
+            time: "558463577",
+            ben: "541518024"
         };
 
         let currentSourceKey = 'custom';
@@ -140,7 +144,6 @@
         async function switchSource(key) {
             currentSourceKey = key;
             
-            // 更新按鈕樣式
             document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtnId = {
                 custom: 'btn-custom',
@@ -158,7 +161,9 @@
 
         async function fetchData() {
             try {
-                const response = await fetch(sources[currentSourceKey]);
+                // 拼接對應分頁的網址
+                const targetUrl = `${base_url}&gid=${gids[currentSourceKey]}`;
+                const response = await fetch(targetUrl);
                 const data = await response.text();
                 const rows = data.split('\n').slice(1);
                 sentences = rows.map(row => {
@@ -169,7 +174,7 @@
                 displayRandom();
                 document.getElementById('loading').style.display = 'none';
             } catch (e) {
-                document.getElementById('loading').innerText = '載入失敗';
+                document.getElementById('loading').innerText = '載入失敗，請確認網路連線';
             }
         }
 

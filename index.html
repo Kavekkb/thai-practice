@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰語常用句型</title>
+    <title>泰語隨身練</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -25,27 +25,28 @@
             align-items: center;
         }
 
-        /* 4個資料來源切換按鈕區 - 優化排列 */
+        /* 5個資料來源切換按鈕區 - 改為 Grid 兩列排列 */
         .source-selector {
             width: 100%;
             max-width: 450px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 均分四格 */
-            gap: 6px;
+            grid-template-columns: repeat(3, 1fr); /* 第一列放三個 */
+            gap: 8px;
             margin-bottom: 15px;
             position: sticky;
             top: 10px;
             z-index: 100;
         }
 
+        /* 讓最後兩個按鈕在第二排自動分配空間 */
         .source-btn {
-            padding: 10px 2px;
+            padding: 10px 5px;
             border-radius: 10px;
             border: none;
             background: var(--btn-inactive);
             color: var(--sub-text);
             font-weight: 600;
-            font-size: 0.85rem; /* 稍微縮小字體以容納4個按鈕 */
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
@@ -58,11 +59,24 @@
             box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
         }
 
+        /* 特殊處理：當有5個按鈕時，讓後兩個平分空間 */
+        .source-selector > button:nth-child(4),
+        .source-selector > button:nth-child(5) {
+            grid-column: span 1.5; /* 這需要配合下方 grid 調整，或簡單維持 repeat(3) */
+        }
+        
+        /* 修正為更彈性的 Grid 排列 */
+        .source-selector {
+            grid-template-columns: repeat(6, 1fr); 
+        }
+        .source-btn { grid-column: span 2; } /* 前三個按鈕各佔 2/6 */
+        #btn-ben, #btn-pronounce { grid-column: span 3; } /* 後兩個按鈕各佔 3/6 */
+
         .card { 
             background: var(--card-bg); 
             border-radius: 18px; 
-            padding: 20px 22px; 
-            margin: 10px 0; 
+            padding: 22px 24px; 
+            margin: 12px 0; 
             width: 100%; 
             max-width: 450px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
@@ -80,7 +94,7 @@
         }
 
         .thai { 
-            font-size: 2.05rem; /* 維持超大字體 */
+            font-size: 2.05rem; 
             line-height: 1.4;
             margin-bottom: 6px; 
             font-weight: 700; 
@@ -120,6 +134,7 @@
         <button id="btn-thai2" class="source-btn" onclick="switchSource('thai2')">泰二</button>
         <button id="btn-time" class="source-btn" onclick="switchSource('time')">時間</button>
         <button id="btn-ben" class="source-btn" onclick="switchSource('ben')">Ben</button>
+        <button id="btn-pronounce" class="source-btn" onclick="switchSource('pronounce')">發音</button>
     </div>
 
     <div id="loading">載入練習中...</div>
@@ -130,7 +145,8 @@
             custom: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv",
             thai2: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjm7j2vq2047v5aLY3tNBU_va83hqS9u6_skG35lTdtVxK4nCNC7qRoePHg_FsbdxvjbkR0s-JxmNt/pub?output=csv",
             time: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3bHaY_7eyJ7RBHZl22Gr-y7gH6Is3oCL6CKS5x4qQpAopl4i2bsS2Xk6N7xgUK3n5o5A1_xUd9ab-/pub?output=csv",
-            ben: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTA2sY9XzLuD8nsn6cv75mBv5_izZrVYxnykdMhdK4PKoCtZ2q-7x_R8xg5NIRhzXPNNBj1qjWSAHG0/pub?output=csv"
+            ben: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTA2sY9XzLuD8nsn6cv75mBv5_izZrVYxnykdMhdK4PKoCtZ2q-7x_R8xg5NIRhzXPNNBj1qjWSAHG0/pub?output=csv",
+            pronounce: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3mtsSQh7NdPUY6mmsBDaT1KsmmLXZZJf7L3ujTT9qS6iBFXZI8OrBwVQn3D22O6c0ApWGTpIG8C8m/pub?output=csv"
         };
 
         let currentSourceKey = 'custom';
@@ -139,11 +155,16 @@
         async function switchSource(key) {
             currentSourceKey = key;
             
-            // 更新按鈕樣式
-            document.getElementById('btn-custom').classList.toggle('active', key === 'custom');
-            document.getElementById('btn-thai2').classList.toggle('active', key === 'thai2');
-            document.getElementById('btn-time').classList.toggle('active', key === 'time');
-            document.getElementById('btn-ben').classList.toggle('active', key === 'ben');
+            // 更新所有按鈕狀態
+            document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = {
+                custom: 'btn-custom',
+                thai2: 'btn-thai2',
+                time: 'btn-time',
+                ben: 'btn-ben',
+                pronounce: 'btn-pronounce'
+            }[key];
+            document.getElementById(activeBtn).classList.add('active');
             
             document.getElementById('app').innerHTML = '';
             document.getElementById('loading').style.display = 'block';

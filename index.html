@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰語隨身練</title>
+    <title>泰語隨身練 Pro</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -16,13 +16,14 @@
             --search-bg: #333;
             --link-color: #2ecc71;
             --danger-color: #e74c3c;
+            --star-color: #f1c40f;
         }
 
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg-color); 
             color: var(--text-color);
-            padding: 10px 15px 50px 15px; 
+            padding: 10px 15px 60px 15px; 
             margin: 0;
             display: flex; 
             flex-direction: column; 
@@ -30,7 +31,7 @@
             min-height: 100vh;
         }
 
-        /* 頂部按鈕容器 - RWD 寬度適應 */
+        /* 頂部選單容器 */
         .source-selector {
             width: 100%;
             max-width: 480px;
@@ -55,12 +56,12 @@
             border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
+        /* 網格調整為 3x3 以容納「我的收藏」 */
         .grid-selector {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
         }
 
@@ -75,44 +76,39 @@
             cursor: pointer;
         }
 
-        .active {
-            background: var(--btn-active) !important;
-            color: white !important;
-        }
+        .active { background: var(--btn-active) !important; color: white !important; }
 
-        /* 控制項 */
-        .extra-controls {
+        /* 語速與搜尋控制區 */
+        .controls-panel {
             width: 100%;
             max-width: 480px;
-            margin-bottom: 15px;
-        }
-
-        .nav-btn {
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #444;
             background: #252525;
-            color: #ccc;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #444;
         }
 
-        /* 搜尋框 RWD */
-        .search-container {
-            width: 100%;
-            max-width: 480px;
-            margin-bottom: 15px;
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
         }
+
+        .speed-control label { font-size: 0.9rem; color: var(--sub-text); min-width: 70px; }
+
+        input[type=range] { flex: 1; accent-color: var(--btn-active); }
 
         #search-input {
             width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 2px solid #444;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #555;
             background: var(--search-bg);
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             box-sizing: border-box;
             outline: none;
         }
@@ -122,7 +118,7 @@
             background: var(--card-bg); 
             border-radius: 20px; 
             padding: 24px; 
-            margin: 10px 0; 
+            margin: 12px 0; 
             width: 100%; 
             max-width: 480px; 
             display: flex; 
@@ -133,14 +129,28 @@
             position: relative;
         }
 
-        .source-tag {
+        .card-header {
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 0.75rem;
-            color: var(--btn-active);
-            font-weight: bold;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
+
+        .source-tag { font-size: 0.75rem; color: var(--btn-active); font-weight: bold; }
+
+        .btn-star {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #555;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .btn-star.favorited { color: var(--star-color); }
 
         .thai { 
             font-size: 2.05rem; 
@@ -148,22 +158,36 @@
             margin-bottom: 8px; 
             font-weight: 700; 
             word-wrap: break-word;
+            padding-right: 20px;
         }
 
         .chinese { font-size: 1.2rem; color: var(--sub-text); }
 
         .btn-speak { 
             border: none; background: transparent; color: var(--accent-color); 
-            font-size: 2rem; cursor: pointer; padding-left: 10px;
+            font-size: 2rem; cursor: pointer;
         }
 
-        /* === RWD 外部連結頁面優化 === */
+        /* 外部連結資源 */
+        .nav-btn {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #444;
+            background: #252525;
+            color: #ccc;
+            font-weight: 600;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        /* 彈窗 Overlay */
         #link-page {
             position: fixed;
-            top: 0; left: 0; 
-            width: 100%; height: 100%;
-            background: rgba(26, 26, 26, 0.95); /* 深色背景 */
-            backdrop-filter: blur(8px); /* 磨砂玻璃效果 */
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(8px);
             z-index: 2000;
             display: none;
             flex-direction: column;
@@ -173,13 +197,7 @@
             box-sizing: border-box;
         }
 
-        .link-content-box {
-            width: 100%;
-            max-width: 350px; /* 限制寬度在手機正中央 */
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .link-content-box { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; }
 
         .link-item {
             background: var(--card-bg);
@@ -191,10 +209,7 @@
             font-weight: bold;
             text-align: center;
             border: 1px solid rgba(46, 204, 113, 0.2);
-            transition: transform 0.1s;
         }
-
-        .link-item:active { transform: scale(0.98); }
 
         .close-btn {
             margin-top: 20px;
@@ -203,22 +218,18 @@
             padding: 15px;
             border-radius: 12px;
             border: none;
-            font-size: 1rem;
             font-weight: bold;
-            cursor: pointer;
             width: 100%;
         }
 
-        #loading { margin-top: 50px; font-size: 1.1rem; color: var(--sub-text); }
+        #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 10px; font-size: 0.9rem; width: 100%; max-width: 480px; }
     </style>
 </head>
 <body>
 
     <div class="source-selector">
-        <div class="mode-btn-container">
-            <button id="btn-random" class="btn-main active" onclick="switchMode('random')">全域隨機10句</button>
-        </div>
+        <button id="btn-random" class="btn-main active" onclick="switchMode('random')">🎲全域隨機10句</button>
         <div class="grid-selector">
             <button class="source-btn" onclick="switchSource('custom', this)">網抓</button>
             <button class="source-btn" onclick="switchSource('thai2', this)">泰二</button>
@@ -228,19 +239,22 @@
             <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
             <button class="source-btn" onclick="switchSource('ben', this)">Ben</button>
             <button class="source-btn" onclick="switchSource('self', this)">自建</button>
+            <button id="btn-fav" class="source-btn" style="color: var(--star-color);" onclick="showFavorites(this)">⭐收藏</button>
         </div>
     </div>
 
-    <div class="extra-controls">
-        <button class="nav-btn" onclick="toggleLinkPage(true)">外部資源</button>
-    </div>
+    <button class="nav-btn" onclick="toggleLinkPage(true)">🔗外部連結</button>
 
-    <div class="search-container">
-        <input type="search" id="search-input" placeholder="搜尋全部分頁..." oninput="handleSearch()">
+    <div class="controls-panel">
+        <div class="speed-control">
+            <label>語速: <span id="speed-val">1.0</span>x</label>
+            <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateSpeed()">
+        </div>
+        <input type="search" id="search-input" placeholder="搜尋中文或泰文..." oninput="handleSearch()">
     </div>
 
     <div id="search-info"></div>
-    <div id="loading">正在同步資料...</div>
+    <div id="loading">正在同步雲端資料...</div>
     <div id="app"></div>
 
     <div id="link-page">
@@ -267,10 +281,12 @@
         };
 
         let allData = [];
-        let isLoaded = false;
+        let favorites = JSON.parse(localStorage.getItem('thai_favs')) || [];
+        let currentSpeed = 1.0;
 
-        function toggleLinkPage(show) {
-            document.getElementById('link-page').style.display = show ? 'flex' : 'none';
+        function updateSpeed() {
+            currentSpeed = document.getElementById('speed-slider').value;
+            document.getElementById('speed-val').innerText = parseFloat(currentSpeed).toFixed(1);
         }
 
         async function initAllData() {
@@ -281,74 +297,100 @@
                     const rows = csvText.split(/\r?\n/).slice(1);
                     return rows.map(row => {
                         const cols = row.split(',');
-                        return { thai: cols[0]?.trim(), chinese: cols[1]?.trim(), source: gids[key].name };
+                        const thai = cols[0]?.trim();
+                        const chinese = cols[1]?.trim();
+                        // 產生唯一的 ID 用於收藏夾 (以泰文內容為鍵值)
+                        return { id: btoa(unescape(encodeURIComponent(thai))), thai, chinese, source: gids[key].name };
                     }).filter(item => item.thai);
                 });
                 const results = await Promise.all(fetchPromises);
                 allData = results.flat();
-                isLoaded = true;
                 document.getElementById('loading').style.display = 'none';
                 displayRandom();
             } catch (e) {
-                document.getElementById('loading').innerText = '讀取失敗，請重整';
+                document.getElementById('loading').innerText = '資料同步失敗';
             }
         }
 
-        function handleSearch() {
-            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
-            if (!keyword) {
-                displayRandom();
-                document.getElementById('search-info').innerText = '';
-                return;
+        function toggleFavorite(id) {
+            const index = favorites.indexOf(id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(id);
             }
+            localStorage.setItem('thai_favs', JSON.stringify(favorites));
+            
+            // 重新渲染當前列表以更新星星顏色 (如果是從收藏分頁點擊，則移除該項)
+            const activeBtn = document.querySelector('.source-btn.active');
+            if (activeBtn && activeBtn.id === 'btn-fav') {
+                showFavorites(activeBtn);
+            } else {
+                // 僅更新星星視覺效果
+                document.querySelectorAll(`[data-id="${id}"]`).forEach(btn => {
+                    btn.classList.toggle('favorited');
+                });
+            }
+        }
+
+        function showFavorites(btnElement) {
+            clearActiveButtons();
+            btnElement.classList.add('active');
+            document.getElementById('search-input').value = '';
+            const favItems = allData.filter(item => favorites.includes(item.id));
+            renderList(favItems);
+            document.getElementById('search-info').innerText = `收藏夾：共 ${favItems.length} 筆`;
+        }
+
+        function handleSearch() {
+            const kw = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!kw) { displayRandom(); return; }
             const results = allData.filter(item => 
-                (item.thai && item.thai.toLowerCase().includes(keyword)) || 
-                (item.chinese && item.chinese.toLowerCase().includes(keyword))
+                item.thai.toLowerCase().includes(kw) || item.chinese.toLowerCase().includes(kw)
             );
             renderList(results);
             document.getElementById('search-info').innerText = `搜尋結果：${results.length} 筆`;
             clearActiveButtons();
         }
 
-        function clearActiveButtons() {
-            document.querySelectorAll('.source-btn, .btn-main').forEach(btn => btn.classList.remove('active'));
+        function switchSource(key, btnElement) {
+            clearActiveButtons();
+            btnElement.classList.add('active');
+            document.getElementById('search-input').value = '';
+            const filtered = allData.filter(item => item.source === gids[key].name);
+            renderList(filtered.sort(() => 0.5 - Math.random()).slice(0, 10));
+            document.getElementById('search-info').innerText = `目前顯示：${gids[key].name}`;
         }
 
         function switchMode(mode) {
-            document.getElementById('search-input').value = '';
-            document.getElementById('search-info').innerText = '';
             clearActiveButtons();
             document.getElementById('btn-random').classList.add('active');
+            document.getElementById('search-input').value = '';
             displayRandom();
         }
 
-        function switchSource(key, btnElement) {
-            document.getElementById('search-input').value = '';
-            clearActiveButtons();
-            btnElement.classList.add('active');
-            const filtered = allData.filter(item => item.source === gids[key].name);
-            renderList(filtered.sort(() => 0.5 - Math.random()).slice(0, 10));
-            document.getElementById('search-info').innerText = `目前顯示：${gids[key].name} (隨機10句)`;
-        }
-
         function displayRandom() {
-            if (!isLoaded) return;
             const shuffled = [...allData].sort(() => 0.5 - Math.random()).slice(0, 10);
             renderList(shuffled);
+            document.getElementById('search-info').innerText = '';
         }
 
         function renderList(list) {
             const container = document.getElementById('app');
             container.innerHTML = '';
             if (list.length === 0) {
-                container.innerHTML = '<div style="margin-top:30px; color:#b0b0b0;">無搜尋結果</div>';
+                container.innerHTML = '<div style="margin-top:30px; color:#666;">目前沒有內容</div>';
                 return;
             }
             list.forEach(item => {
+                const isFav = favorites.includes(item.id);
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.innerHTML = `
-                    <div class="source-tag">${item.source}</div>
+                    <div class="card-header">
+                        <span class="source-tag">${item.source}</span>
+                        <button class="btn-star ${isFav ? 'favorited' : ''}" data-id="${item.id}" onclick="toggleFavorite('${item.id}')">★</button>
+                    </div>
                     <div>
                         <div class="thai">${item.thai}</div>
                         <div class="chinese">${item.chinese}</div>
@@ -361,12 +403,17 @@
 
         function speak(text) {
             window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance();
-            msg.text = text;
+            const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'th-TH';
-            msg.rate = 0.85;
+            msg.rate = currentSpeed;
             window.speechSynthesis.speak(msg);
         }
+
+        function clearActiveButtons() {
+            document.querySelectorAll('.source-btn, .btn-main').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function toggleLinkPage(show) { document.getElementById('link-page').style.display = show ? 'flex' : 'none'; }
 
         initAllData();
     </script>

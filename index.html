@@ -134,7 +134,7 @@
 
     <div class="source-selector">
         <button class="source-btn active" onclick="switchMode('random')">隨機10句</button>
-        <button id="btn-custom" class="source-btn" onclick="switchSource('custom')">自建</button>
+        <button id="btn-custom" class="source-btn" onclick="switchSource('custom')">網抓</button>
         <button id="btn-thai2" class="source-btn" onclick="switchSource('thai2')">泰二</button>
         <button id="btn-time" class="source-btn" onclick="switchSource('time')">時間</button>
         <button id="btn-month" class="source-btn" onclick="switchSource('month')">月份</button>
@@ -154,7 +154,7 @@
     <script>
         const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
         const gids = {
-            custom: { name: "自建", id: "538865502" },
+            custom: { name: "網抓", id: "538865502" },
             thai2: { name: "泰二", id: "2121125782" },
             time: { name: "時間", id: "1355116620" },
             month: { name: "月份", id: "1685596903" },

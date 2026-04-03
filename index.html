@@ -131,19 +131,19 @@
     </div>
 
     <div class="source-selector">
-        <button id="btn-random" class="btn-main active" onclick="switchMode('random')">🎲 全域隨機 10 句</button>
+        <button id="btn-random" class="btn-main active" onclick="switchMode('random')">🎲 全域隨機10句</button>
         <div class="grid-selector">
-            <button class="source-btn" onclick="switchSource('custom', this)">網抓</button>
-            <button class="source-btn" onclick="switchSource('thai2', this)">泰二</button>
-            <button class="source-btn" onclick="switchSource('lyrics', this)">歌詞</button>
-            <button class="source-btn" onclick="switchSource('time', this)">時間</button>
-            <button class="source-btn" onclick="switchSource('month', this)">月份</button>
-            <button class="source-btn" onclick="switchSource('week', this)">星期</button>
-            <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
-            <button class="source-btn" onclick="switchSource('ben', this)">Ben</button>
-            <button class="source-btn" onclick="switchSource('self', this)">自建</button>
-        </div>
-        <button id="btn-fav" class="source-btn" style="width:100%; margin-top:8px; color:var(--star-color);" onclick="showFavorites(this)">⭐ 查看我的收藏夾</button>
+    <button class="source-btn" onclick="switchSource('custom', this)">網抓</button>
+    <button class="source-btn" onclick="switchSource('thai2', this)">泰二</button>
+    <button class="source-btn" onclick="switchSource('time', this)">時間</button>
+    <button class="source-btn" onclick="switchSource('month', this)">月份</button>
+    <button class="source-btn" onclick="switchSource('week', this)">星期</button>
+    <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
+    <button class="source-btn" onclick="switchSource('ben', this)">Ben</button>
+    <button class="source-btn" onclick="switchSource('lyrics', this)">歌詞</button>
+    <button class="source-btn" onclick="switchSource('self', this)">自建</button>
+</div>
+        <button id="btn-fav" class="source-btn" style="width:100%; margin-top:8px; color:var(--star-color);" onclick="showFavorites(this)">⭐ 已加星號</button>
     </div>
 
     <div class="search-container">
@@ -159,7 +159,8 @@
             <h2 style="text-align: center;">💡 使用說明</h2>
             <div class="setting-group" style="background: rgba(255, 88, 9, 0.05); border-color: rgba(255, 88, 9, 0.2);">
                 <ul style="font-size: 0.95rem;">
-                    <li>點選上方來源可切換題庫，隨機顯示 10 句。</li>
+                    <li>點選上方來源可切換題庫，隨機顯示10句。</li>
+                    <li>隨機顯示的句字不會包含歌詞。</li>
                     <li>利用搜尋框可輸入泰文、中文查找全表內容。</li>
                     <li>偏好設定內可自訂語速與字體大小。</li>
                     <li>題庫為自行搜集，由 AI 協助整理，有誤請告知。</li>

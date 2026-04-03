@@ -262,7 +262,7 @@
             time: { name: "時間", id: "1355116620" }, 
             color: { name: "顏色", id: "2103981449" }, 
             lyrics: { name: "歌詞", id: "1404447959" },
-            self: { name: "自建", id: "134632937" } 
+            self: { name: "自建", id: "1725449061" } // 已更新為新 GID
         };
 
         let allData = [];
@@ -320,7 +320,15 @@
                     const rows = csvText.split(/\r?\n/).slice(1);
                     return rows.map(row => {
                         const cols = row.split(',');
-                        return { id: btoa(unescape(encodeURIComponent(cols[0]?.trim()))), thai: cols[0]?.trim(), chinese: cols[1]?.trim(), source: gids[key].name };
+                        // 如果是 Google 表單產出的 CSV，第一欄通常是時間戳記，泰語和中文可能在第二、三欄
+                        // 這裡會嘗試判斷：若欄位數 > 2，則取後兩欄；否則取前兩欄
+                        let t = cols[0]?.trim();
+                        let c = cols[1]?.trim();
+                        if(cols.length > 2) {
+                            t = cols[1]?.trim();
+                            c = cols[2]?.trim();
+                        }
+                        return { id: btoa(unescape(encodeURIComponent(t))), thai: t, chinese: c, source: gids[key].name };
                     }).filter(item => item.thai);
                 });
                 const results = await Promise.all(fetchPromises);
@@ -362,7 +370,7 @@
                 displayRandom(); 
                 return; 
             }
-            const results = allData.filter(item => item.thai.toLowerCase().includes(kw) || item.chinese.toLowerCase().includes(kw));
+            const results = allData.filter(item => (item.thai && item.thai.toLowerCase().includes(kw)) || (item.chinese && item.chinese.toLowerCase().includes(kw)));
             renderList(results);
             document.getElementById('search-info').innerText = `找到 ${results.length} 筆結果`;
             document.getElementById('refresh-btn-main').style.display = 'none';

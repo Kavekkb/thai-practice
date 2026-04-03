@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰語隨身練</title>
+    <title>泰語隨身練 Pro</title>
     <style>
-        /* 定義顏色變數 */
         :root {
             --bg-color: #1a1a1a;
             --card-bg: #2d2d2d;
@@ -15,18 +14,15 @@
             --search-bg: #333;
             --search-border: #444;
             --nav-bg: #252525;
-            
             --accent-color: #e67e22;
             --btn-active: #3498db;
             --link-color: #2ecc71;
             --danger-color: #e74c3c;
             --star-color: #f1c40f;
-            
-            --thai-size: 2.05rem;
-            --zh-size: 1.2rem;
+            --thai-size: 32px;
+            --zh-size: 19.2px;
         }
 
-        /* 淺色模式變數 */
         [data-theme="light"] {
             --bg-color: #f5f5f5;
             --card-bg: #ffffff;
@@ -52,219 +48,79 @@
         }
 
         .source-selector {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 10px;
-            position: sticky;
-            top: 0;
-            background: var(--bg-color);
-            padding: 10px 0;
-            z-index: 100;
+            width: 100%; max-width: 480px;
+            display: flex; flex-direction: column; gap: 8px;
+            margin-bottom: 10px; position: sticky; top: 0;
+            background: var(--bg-color); padding: 10px 0; z-index: 100;
             transition: background 0.3s;
         }
 
         .btn-main {
-            width: 100%;
-            padding: 14px;
-            font-size: 1.05rem;
-            background: var(--btn-inactive);
-            color: var(--text-color);
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
+            width: 100%; padding: 14px; font-size: 1.05rem;
+            background: var(--btn-inactive); color: var(--text-color);
+            border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
         }
 
-        .grid-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
+        .grid-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
         .source-btn {
-            padding: 12px 2px;
-            border-radius: 10px;
-            border: none;
-            background: var(--btn-inactive);
-            color: var(--sub-text);
-            font-weight: 600;
-            font-size: 0.85rem; 
-            cursor: pointer;
+            padding: 12px 2px; border-radius: 10px; border: none;
+            background: var(--btn-inactive); color: var(--sub-text);
+            font-weight: 600; font-size: 0.85rem; cursor: pointer;
         }
 
         .active { background: var(--btn-active) !important; color: white !important; }
 
-        .search-container {
-            width: 100%;
-            max-width: 480px;
-            margin-bottom: 15px;
-        }
+        .search-container { width: 100%; max-width: 480px; margin-bottom: 15px; }
 
         #search-input {
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 2px solid var(--search-border);
-            background: var(--search-bg);
-            color: var(--text-color);
-            font-size: 1.1rem;
-            box-sizing: border-box;
-            outline: none;
+            width: 100%; padding: 16px; border-radius: 14px;
+            border: 2px solid var(--search-border); background: var(--search-bg);
+            color: var(--text-color); font-size: 1.1rem; box-sizing: border-box; outline: none;
         }
 
         .card { 
-            background: var(--card-bg); 
-            border-radius: 20px; 
-            padding: 24px; 
-            margin: 12px 0; 
-            width: 100%; 
-            max-width: 480px; 
-            display: flex; 
-            align-items: center;
-            justify-content: space-between;
-            box-sizing: border-box;
-            border: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: var(--card-bg); border-radius: 20px; padding: 24px; margin: 12px 0; 
+            width: 100%; max-width: 480px; display: flex; align-items: center;
+            justify-content: space-between; box-sizing: border-box;
+            border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
         }
 
-        .card-header {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
+        .card-header { position: absolute; top: 10px; right: 15px; display: flex; gap: 10px; align-items: center; }
         .source-tag { font-size: 0.75rem; color: var(--btn-active); font-weight: bold; }
-
-        .btn-star {
-            background: transparent;
-            border: none;
-            font-size: 1.3rem;
-            cursor: pointer;
-            color: #999;
-            padding: 0;
-            line-height: 1;
-        }
-
+        .btn-star { background: transparent; border: none; font-size: 1.3rem; cursor: pointer; color: #999; padding: 0; }
         .btn-star.favorited { color: var(--star-color); }
 
         .thai { 
-            font-size: var(--thai-size); 
-            line-height: 1.4;
-            margin-bottom: 8px; 
-            font-weight: 700; 
-            word-wrap: break-word;
-            padding-right: 25px;
+            font-size: var(--thai-size); line-height: 1.4; margin-bottom: 8px; 
+            font-weight: 700; word-wrap: break-word; padding-right: 25px;
         }
-
         .chinese { font-size: var(--zh-size); color: var(--sub-text); }
 
-        .btn-speak { 
-            border: none; background: transparent; color: var(--accent-color); 
-            font-size: 2.2rem; cursor: pointer; padding-left: 10px;
-        }
+        .btn-speak { border: none; background: transparent; color: var(--accent-color); font-size: 2.2rem; cursor: pointer; padding-left: 10px; }
 
         .nav-btn {
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--search-border);
-            background: var(--nav-bg);
-            color: var(--sub-text);
-            font-weight: 600;
-            width: 100%;
-            max-width: 480px;
-            margin-bottom: 10px;
-            cursor: pointer;
+            padding: 12px; border-radius: 12px; border: 1px solid var(--search-border);
+            background: var(--nav-bg); color: var(--sub-text); font-weight: 600;
+            width: 100%; max-width: 480px; margin-bottom: 10px; cursor: pointer;
         }
 
-        /* 設定彈窗 */
         #settings-page {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color);
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 2000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
         }
 
-        .settings-content {
-            width: 100%;
-            max-width: 350px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .setting-group {
-            background: var(--card-bg);
-            padding: 15px 20px;
-            border-radius: 15px;
-            border: 1px solid var(--search-border);
-        }
-
-        .setting-label {
-            display: block;
-            margin-bottom: 12px;
-            font-weight: bold;
-            color: var(--sub-text);
-            font-size: 0.85rem;
-        }
-
-        .control-box {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-        }
-
-        /* 模式切換按鈕樣式 */
-        .theme-switch-btn {
-            background: var(--btn-active);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-
+        .settings-content { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; }
+        .setting-group { background: var(--card-bg); padding: 15px 20px; border-radius: 15px; border: 1px solid var(--search-border); }
+        .setting-label { display: block; margin-bottom: 12px; font-weight: bold; color: var(--sub-text); font-size: 0.85rem; }
+        .control-box { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+        .theme-switch-btn { background: var(--btn-active); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
         input[type=range] { flex: 1; accent-color: var(--btn-active); }
-
-        .link-item {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 15px;
-            text-decoration: none;
-            color: var(--link-color);
-            font-size: 1rem;
-            font-weight: bold;
-            text-align: center;
-            border: 1px solid var(--search-border);
-        }
-
-        .close-btn {
-            margin-top: 10px;
-            background: var(--danger-color);
-            color: white;
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            font-weight: bold;
-            font-size: 1rem;
-            width: 100%;
-        }
-
+        .link-item { background: var(--card-bg); padding: 15px; border-radius: 15px; text-decoration: none; color: var(--link-color); font-size: 1rem; font-weight: bold; text-align: center; border: 1px solid var(--search-border); }
+        .close-btn { margin-top: 10px; background: var(--danger-color); color: white; padding: 16px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; width: 100%; }
         #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 10px; font-size: 0.9rem; width: 100%; max-width: 480px; }
     </style>
@@ -272,7 +128,7 @@
 <body>
 
     <div class="source-selector">
-        <button id="btn-random" class="btn-main active" onclick="switchMode('random')">全域隨機10句</button>
+        <button id="btn-random" class="btn-main active" onclick="switchMode('random')">🎲 全域隨機10句</button>
         <div class="grid-selector">
             <button class="source-btn" onclick="switchSource('custom', this)">網抓</button>
             <button class="source-btn" onclick="switchSource('thai2', this)">泰二</button>
@@ -282,7 +138,7 @@
             <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
             <button class="source-btn" onclick="switchSource('ben', this)">Ben</button>
             <button class="source-btn" onclick="switchSource('self', this)">自建</button>
-            <button id="btn-fav" class="source-btn" style="color: var(--star-color);" onclick="showFavorites(this)">收藏</button>
+            <button id="btn-fav" class="source-btn" style="color: var(--star-color);" onclick="showFavorites(this)">⭐ 收藏</button>
         </div>
     </div>
 
@@ -297,91 +153,85 @@
     <div id="app"></div>
 
     <div id="settings-page">
-        <h2 style="margin-bottom: 20px;">設定與外部資源</h2>
+        <h2 style="margin-bottom: 20px;">⚙️ 設定與資源</h2>
         <div class="settings-content">
-            
             <div class="setting-group">
-                <span class="setting-label">介面模式</span>
-                <button id="theme-toggle" class="theme-switch-btn" onclick="toggleTheme()">切換至淺色模式</button>
+                <span class="setting-label">黑/白模式</span>
+                <button id="theme-toggle" class="theme-switch-btn" onclick="toggleTheme()">切換模式</button>
             </div>
-
             <div class="setting-group">
                 <span class="setting-label">發音語速</span>
                 <div class="control-box">
                     <span id="speed-val" style="min-width: 30px; font-weight: bold;">1.0</span>
-                    <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateSpeed()">
+                    <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateSpeed(this.value)">
                 </div>
             </div>
-
             <div class="setting-group">
                 <span class="setting-label">字體大小</span>
                 <div class="control-box">
                     <span id="font-val" style="min-width: 30px; font-weight: bold;">32</span>
-                    <input type="range" id="font-slider" min="14" max="48" step="1" value="32" oninput="updateFontSize()">
+                    <input type="range" id="font-slider" min="14" max="48" step="1" value="32" oninput="updateFontSize(this.value)">
                 </div>
             </div>
-
-            <span class="setting-label" style="margin-left: 5px;">外部連結</span>
+            <span class="setting-label" style="margin-left: 5px;">🔗 外部學習資源</span>
             <a href="https://thai-alphabet.com/" target="_blank" class="link-item">thai-alphabet</a>
             <a href="https://www.thai2english.com/" target="_blank" class="link-item">thai2english</a>
-            
             <button class="close-btn" onclick="toggleSettings(false)">儲存並返回</button>
         </div>
     </div>
 
     <script>
         const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
-        
-        const gids = {
-            custom: { name: "網抓", id: "538865502" },
-            thai2: { name: "泰二", id: "2121125782" },
-            time: { name: "時間", id: "1355116620" },
-            month: { name: "月份", id: "1685596903" },
-            week: { name: "星期", id: "1150463518" },
-            color: { name: "顏色", id: "2103981449" },
-            ben: { name: "Ben", id: "296346577" },
-            self: { name: "自建", id: "134632937" }
-        };
+        const gids = { custom: { name: "網抓", id: "538865502" }, thai2: { name: "泰二", id: "2121125782" }, time: { name: "時間", id: "1355116620" }, month: { name: "月份", id: "1685596903" }, week: { name: "星期", id: "1150463518" }, color: { name: "顏色", id: "2103981449" }, ben: { name: "Ben", id: "296346577" }, self: { name: "自建", id: "134632937" } };
 
         let allData = [];
         let favorites = JSON.parse(localStorage.getItem('thai_favs')) || [];
-        let currentSpeed = 1.0;
+        
+        // --- 設定持久化記憶功能 ---
 
-        // 主題管理
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const target = current === 'light' ? 'dark' : 'light';
-            setTheme(target);
-        }
-
+        // 1. 初始化主題
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('thai_theme', theme);
             const btn = document.getElementById('theme-toggle');
             btn.innerText = theme === 'light' ? '切換至深色模式' : '切換至淺色模式';
-            btn.style.background = theme === 'light' ? '#2c3e50' : '#3498db';
+        }
+        setTheme(localStorage.getItem('thai_theme') || 'dark');
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            setTheme(current === 'light' ? 'dark' : 'light');
         }
 
-        // 初始化主題
-        const savedTheme = localStorage.getItem('thai_theme') || 'dark';
-        setTheme(savedTheme);
+        // 2. 初始化語速
+        let currentSpeed = parseFloat(localStorage.getItem('thai_speed')) || 1.0;
+        document.getElementById('speed-slider').value = currentSpeed;
+        document.getElementById('speed-val').innerText = currentSpeed.toFixed(1);
 
-        function toggleSettings(show) {
-            document.getElementById('settings-page').style.display = show ? 'flex' : 'none';
+        function updateSpeed(val) {
+            currentSpeed = parseFloat(val);
+            document.getElementById('speed-val').innerText = currentSpeed.toFixed(1);
+            localStorage.setItem('thai_speed', currentSpeed);
         }
 
-        function updateSpeed() {
-            currentSpeed = document.getElementById('speed-slider').value;
-            document.getElementById('speed-val').innerText = parseFloat(currentSpeed).toFixed(1);
+        // 3. 初始化字體大小
+        function initFontSize() {
+            const savedSize = localStorage.getItem('thai_font_size') || 32;
+            updateFontSize(savedSize, false); 
+            document.getElementById('font-slider').value = savedSize;
         }
 
-        function updateFontSize() {
-            const size = document.getElementById('font-slider').value;
-            document.getElementById('font-val').innerText = size;
+        function updateFontSize(val, shouldStore = true) {
+            document.getElementById('font-val').innerText = val;
             const root = document.documentElement;
-            root.style.setProperty('--thai-size', size + 'px');
-            root.style.setProperty('--zh-size', (size * 0.6) + 'px');
+            root.style.setProperty('--thai-size', val + 'px');
+            root.style.setProperty('--zh-size', (val * 0.6) + 'px');
+            if(shouldStore) localStorage.setItem('thai_font_size', val);
         }
+
+        // -----------------------
+
+        function toggleSettings(show) { document.getElementById('settings-page').style.display = show ? 'flex' : 'none'; }
 
         async function initAllData() {
             try {
@@ -454,10 +304,7 @@
         function renderList(list) {
             const container = document.getElementById('app');
             container.innerHTML = '';
-            if (list.length === 0) {
-                container.innerHTML = '<div style="margin-top:30px; color:#666;">無內容</div>';
-                return;
-            }
+            if (list.length === 0) { container.innerHTML = '<div style="margin-top:30px; color:#666;">無內容</div>'; return; }
             list.forEach(item => {
                 const isFav = favorites.includes(item.id);
                 const div = document.createElement('div');
@@ -489,6 +336,8 @@
             document.querySelectorAll('.source-btn, .btn-main').forEach(btn => btn.classList.remove('active'));
         }
 
+        // 初始化
+        initFontSize();
         initAllData();
     </script>
 </body>

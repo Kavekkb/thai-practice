@@ -159,7 +159,7 @@
             <div id="search-info"></div>
         </div>
         <div class="search-container">
-            <input type="search" id="search-input" placeholder="🔍 輸入中文或泰文搜尋......." oninput="handleSearch()">
+            <input type="search" id="search-input" placeholder="輸入中文或泰文搜尋......." oninput="handleSearch()">
         </div>
         <div class="action-row">
             <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
@@ -186,14 +186,13 @@
             <div class="grid-selector">
                 <button class="source-btn" onclick="switchSource('custom', this)">網抓</button>
                 <button class="source-btn" onclick="switchSource('thai2', this)">泰二</button>
-                <button class="source-btn" onclick="switchSource('ben', this)">Ben</button>
                 <button class="source-btn" onclick="switchSource('month', this)">月份</button>
                 <button class="source-btn" onclick="switchSource('week', this)">星期</button>
                 <button class="source-btn" onclick="switchSource('time', this)">時間</button>
                 <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
                 <button class="source-btn" onclick="switchSource('lyrics', this)">歌詞</button>
-                <button class="source-btn" onclick="switchSource('self_sent', this)">句</button>
-                <button class="source-btn" onclick="switchSource('self_word', this)">單</button>
+                <button class="source-btn" onclick="switchSource('self_sent', this)">自建句子</button>
+                <button class="source-btn" onclick="switchSource('self_word', this)">自建單字</button>
             </div>
         </div>
 
@@ -224,7 +223,7 @@
             <div class="setting-group">
                 <span class="sidebar-label">🎲 抽選邏輯</span>
                 <p class="info-text">
-                    • 隨機10句：從「網抓、泰二、Ben、自建」頁面抽選<br>
+                    • 隨機10句：從「網抓、泰二、自建句子、自建單字」頁面抽選<br>
                     • 分類隨機：從指定的分類中抽選 10 筆<br>
                     • 搜尋模式：輸入關鍵字可搜尋所有分類資料<br>
                 </p>

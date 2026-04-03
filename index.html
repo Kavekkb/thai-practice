@@ -47,14 +47,25 @@
         .header {
             width: 100%; max-width: 480px; display: flex;
             justify-content: space-between; align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .app-title { font-size: 1.2rem; font-weight: bold; color: var(--btn-active); }
+        .app-title { font-size: 1.4rem; font-weight: bold; color: var(--btn-active); letter-spacing: 1px; }
         .menu-toggle {
             background: var(--nav-bg); border: 1px solid var(--search-border);
             color: var(--text-color); font-size: 1.5rem; padding: 8px 12px;
             border-radius: 10px; cursor: pointer; z-index: 1001;
         }
+
+        /* 主畫面功能說明區 */
+        .main-info {
+            width: 100%; max-width: 480px;
+            background: var(--card-bg); border-radius: 15px;
+            padding: 15px; margin-bottom: 15px;
+            border: 1px solid var(--search-border);
+            box-sizing: border-box;
+        }
+        .main-info ul { margin: 0; padding-left: 20px; font-size: 0.85rem; color: var(--sub-text); line-height: 1.6; }
+        .main-info li b { color: var(--btn-active); }
 
         /* 側邊欄 Sidebar */
         .sidebar {
@@ -87,13 +98,23 @@
             margin-bottom: 8px; text-align: left; cursor: pointer; font-weight: bold;
         }
 
-        /* 搜尋框 */
-        .search-container { width: 100%; max-width: 480px; margin-bottom: 15px; }
-        #search-input {
-            width: 100%; padding: 16px; border-radius: 14px;
-            border: 2px solid var(--search-border); background: var(--search-bg);
-            color: var(--text-color); font-size: 1.1rem; box-sizing: border-box; outline: none;
+        /* 操作控制區 (搜尋 + 重整) */
+        .control-row {
+            width: 100%; max-width: 480px; display: flex; gap: 10px; margin-bottom: 15px;
         }
+        .search-container { flex: 1; }
+        #search-input {
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: 2px solid var(--search-border); background: var(--search-bg);
+            color: var(--text-color); font-size: 1rem; box-sizing: border-box; outline: none;
+        }
+        .refresh-btn {
+            background: var(--btn-active); color: white; border: none;
+            border-radius: 12px; padding: 0 15px; cursor: pointer;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s;
+        }
+        .refresh-btn:active { transform: rotate(45deg); }
 
         /* 卡片樣式 */
         .card { 
@@ -133,8 +154,20 @@
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
 
-    <div class="search-container">
-        <input type="search" id="search-input" placeholder="搜尋泰文或中文..." oninput="handleSearch()">
+    <div class="main-info">
+        <ul>
+            <li>🎲 <b>全域隨機</b>：網抓、泰二、Ben、自建。</li>
+            <li>🔄 <b>換一組</b>：點擊按鈕即時刷新隨機清單。</li>
+            <li>🔍 <b>搜尋</b>：輸入中泰文可查找全庫。</li>
+            <li>⭐ <b>收藏</b>：點擊 ★ 記錄到收藏夾。</li>
+        </ul>
+    </div>
+
+    <div class="control-row">
+        <div class="search-container">
+            <input type="search" id="search-input" placeholder="搜尋全題庫..." oninput="handleSearch()">
+        </div>
+        <button class="refresh-btn" onclick="refreshContent()" title="換一組">🔄</button>
     </div>
 
     <div id="search-info"></div>
@@ -146,7 +179,7 @@
     <div id="sidebar" class="sidebar">
         <div class="sidebar-section">
             <span class="sidebar-label">核心功能</span>
-            <button id="btn-random" class="side-full-btn active" onclick="switchMode('random')">🎲 全域隨機 10 句</button>
+            <button id="btn-random" class="side-full-btn active" onclick="switchMode('random')"> 隨機 10 句</button>
             <button id="btn-fav" class="side-full-btn" style="color:var(--star-color);" onclick="showFavorites(this)">⭐ 已加星號收藏</button>
         </div>
 
@@ -166,31 +199,12 @@
         </div>
 
         <div class="sidebar-section">
-            <span class="sidebar-label">系統與資源</span>
+            <span class="sidebar-label">系統設置</span>
             <button class="side-full-btn" onclick="openModal('settings-page')">⚙️ 偏好設定</button>
-            <button class="side-full-btn" onclick="openModal('info-page')">💡 功能說明</button>
             <button class="side-full-btn" onclick="openModal('links-page')">🔗 外部資源</button>
         </div>
         
         <button class="close-btn" style="background: var(--nav-bg); color: var(--sub-text);" onclick="toggleSidebar()">關閉選單</button>
-    </div>
-
-    <div id="info-page" class="modal-page">
-        <div class="modal-content">
-            <h2 style="text-align:center">💡 功能說明</h2>
-            <div class="setting-group">
-                <ul style="font-size:0.9rem; padding-left:15px; color:var(--sub-text);">
-                 
-                    <li>隨機10句來源：網抓、泰二、Ben、自建</li>
-<li>上方各功能扭可切換主題，點右方喇叭發音</li>
-<li>右上角星號可將該句加入收藏</li>
-<li>搜尋框可輸入泰文、中文查找全表內容</li>
-<li>偏好設定可切換主題、自訂語速與字體大小</li>
-<li>題庫為自行搜集，AI協助整理</li>
-                </ul>
-            </div>
-            <button class="close-btn" onclick="closeModal('info-page')">返回</button>
-        </div>
     </div>
 
     <div id="settings-page" class="modal-page">
@@ -208,7 +222,7 @@
                 <span class="sidebar-label">🔤 字體 (<span id="font-val">32</span>px)</span>
                 <input type="range" id="font-slider" min="20" max="48" step="1" value="32" oninput="updateFontSize(this.value)" style="width:100%">
             </div>
-            <button class="close-btn" onclick="closeModal('settings-page')">儲存返回</button>
+            <button class="close-btn" onclick="closeModal('settings-page')">儲存並返回</button>
         </div>
     </div>
 
@@ -237,8 +251,9 @@
 
         let allData = [];
         let favorites = JSON.parse(localStorage.getItem('thai_favs')) || [];
+        let currentMode = 'random'; // 追蹤當前選取的分類
+        let currentSourceKey = null;
 
-        // --- 側邊欄控制 ---
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');
@@ -254,7 +269,7 @@
 
         function openModal(id) { 
             document.getElementById(id).style.display = 'flex'; 
-            if(window.innerWidth < 600) toggleSidebar(); // 手機版點擊功能後自動收起側欄
+            if(window.innerWidth < 600) toggleSidebar(); 
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -300,7 +315,22 @@
             } catch (e) { document.getElementById('loading').innerText = '資料同步失敗'; }
         }
 
+        // --- 重整功能 ---
+        function refreshContent() {
+            document.getElementById('search-input').value = '';
+            if (currentMode === 'random') {
+                displayRandom();
+            } else if (currentMode === 'source' && currentSourceKey) {
+                const filtered = allData.filter(item => item.source === gids[currentSourceKey].name);
+                renderList(filtered.sort(() => 0.5 - Math.random()).slice(0, 10));
+            } else if (currentMode === 'fav') {
+                const favItems = allData.filter(item => favorites.includes(item.id));
+                renderList(favItems.sort(() => 0.5 - Math.random()));
+            }
+        }
+
         function displayRandom() {
+            currentMode = 'random';
             const allowed = ["網抓", "泰二", "Ben", "自建"];
             const filteredData = allData.filter(item => allowed.includes(item.source));
             const shuffled = [...filteredData].sort(() => 0.5 - Math.random()).slice(0, 10);
@@ -318,9 +348,11 @@
         }
 
         function switchSource(key, btnElement) {
+            currentMode = 'source';
+            currentSourceKey = key;
             clearActiveButtons();
             btnElement.classList.add('active');
-            toggleSidebar(); // 選完後自動關閉
+            toggleSidebar();
             const filtered = allData.filter(item => item.source === gids[key].name);
             renderList(filtered.sort(() => 0.5 - Math.random()).slice(0, 10));
             document.getElementById('search-info').innerText = ''; 
@@ -334,6 +366,7 @@
         }
 
         function showFavorites(btnElement) {
+            currentMode = 'fav';
             clearActiveButtons();
             btnElement.classList.add('active');
             toggleSidebar();

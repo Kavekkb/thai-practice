@@ -192,7 +192,8 @@
                 <button class="source-btn" onclick="switchSource('time', this)">時間</button>
                 <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
                 <button class="source-btn" onclick="switchSource('lyrics', this)">歌詞</button>
-                <button class="source-btn" onclick="switchSource('self', this)">自建</button>
+                <button class="source-btn" onclick="switchSource('self_sent', this)">句</button>
+                <button class="source-btn" onclick="switchSource('self_word', this)">單</button>
             </div>
         </div>
 
@@ -271,17 +272,18 @@
 
     <script>
         const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
-        const gids = { 
-            custom: { name: "網抓", id: "538865502" }, 
-            thai2: { name: "泰二", id: "2121125782" }, 
-            ben: { name: "Ben", id: "296346577" },
-            month: { name: "月份", id: "1685596903" }, 
-            week: { name: "星期", id: "1150463518" }, 
-            time: { name: "時間", id: "1355116620" }, 
-            color: { name: "顏色", id: "2103981449" }, 
-            lyrics: { name: "歌詞", id: "1404447959" },
-            self: { name: "自建", id: "1725449061" }
-        };
+        // 1. 更新資料來源 GID
+const gids = { 
+    custom: { name: "網抓", id: "538865502" }, 
+    thai2: { name: "泰二", id: "2121125782" }, 
+    time: { name: "時間", id: "1355116620" }, 
+    month: { name: "月份", id: "1685596903" }, 
+    week: { name: "星期", id: "1150463518" }, 
+    color: { name: "顏色", id: "2103981449" }, 
+    lyrics: { name: "歌詞", id: "1404447959" },
+    self_sent: { name: "自建句子", id: "1620358085" }, // 新增
+    self_word: { name: "自建單字", id: "134632937" }   // 新增
+};
 
         let allData = [];
         let favorites = JSON.parse(localStorage.getItem('thai_favs')) || [];
@@ -380,15 +382,17 @@
             }
         }
 
-        function displayRandom() {
-            currentMode = 'random';
-            const allowed = ["網抓", "泰二", "Ben", "自建"];
-            const filteredData = allData.filter(item => allowed.includes(item.source));
-            const shuffled = [...filteredData].sort(() => 0.5 - Math.random()).slice(0, 10);
-            renderList(shuffled);
-            document.getElementById('search-info').innerText = '';
-            document.getElementById('refresh-btn-main').style.display = 'flex';
-        }
+        // 2. 更新隨機抽選邏輯
+function displayRandom() {
+    currentMode = 'random';
+    // 調整為妳指定的四個來源
+    const allowed = ["網抓", "泰二", "自建句子", "自建單字"];
+    const filteredData = allData.filter(item => allowed.includes(item.source));
+    const shuffled = [...filteredData].sort(() => 0.5 - Math.random()).slice(0, 10);
+    renderList(shuffled);
+    document.getElementById('search-info').innerText = '';
+    document.getElementById('refresh-btn-main').style.display = 'flex';
+}
 
         function handleSearch() {
             const kw = document.getElementById('search-input').value.trim().toLowerCase();

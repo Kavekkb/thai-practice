@@ -158,16 +158,16 @@
         <div class="modal-content">
             <h2 style="text-align: center;">💡 使用說明</h2>
             <div class="setting-group" style="background: rgba(255, 88, 9, 0.05); border-color: rgba(255, 88, 9, 0.2);">
-                <ul style="font-size: 0.95rem;">
+                <ul style="font-size: 2.5rem;">
                     <li>點選上方來源可切換題庫，隨機顯示10句</li>
-                    <li>隨機顯示的句字不會包含歌詞</li>
+                    <li>隨機顯示的句子不會包含歌詞頁面的內容</li>
                     <li>點右上角星號可將該句加入收藏</li>
                     <li>利用搜尋框可輸入泰文、中文查找全表內容</li>
                     <li>偏好設定內可自訂語速與字體大小</li>
                     <li>題庫為自行搜集，AI協助整理，有誤請告知。</li>
                 </ul>
             </div>
-            <button class="close-btn" onclick="closeModal('info-page')">我知道了</button>
+            <button class="close-btn" onclick="closeModal('info-page')">返回</button>
         </div>
     </div>
 
@@ -187,7 +187,7 @@
             <div class="setting-group">
                 <span class="setting-label">🔤 字體大小 (<span id="font-val">32</span>px)</span>
                 <div class="control-box">
-                    <input type="range" id="font-slider" min="14" max="48" step="1" value="32" oninput="updateFontSize(this.value)">
+                    <input type="range" id="font-slider" min="20" max="48" step="1" value="32" oninput="updateFontSize(this.value)">
                 </div>
             </div>
             <button class="close-btn" onclick="closeModal('settings-page')">儲存並關閉</button>
@@ -199,7 +199,7 @@
             <h2 style="text-align: center;">🔗 外部資源</h2>
             <a href="https://thai-alphabet.com/" target="_blank" class="link-item">Thai Alphabet (字母學習)</a>
             <a href="https://www.thai2english.com/" target="_blank" class="link-item">Thai2English (線上字典)</a>
-            <button class="close-btn" onclick="closeModal('links-page')">返回主畫面</button>
+            <button class="close-btn" onclick="closeModal('links-page')">返回</button>
         </div>
     </div>
 

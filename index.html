@@ -55,7 +55,6 @@
             border-radius: 10px; cursor: pointer; z-index: 1001;
         }
 
-        /* 調整控制區：搜尋與重整垂直分離 */
         .control-area {
             width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;
         }
@@ -64,7 +63,6 @@
             width: 100%; padding: 14px 18px; border-radius: 12px;
             border: 2px solid var(--search-border); background: var(--search-bg);
             color: var(--text-color); font-size: 1rem; box-sizing: border-box; outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
         .action-row {
             display: flex; justify-content: flex-end; align-items: center; width: 100%;
@@ -73,10 +71,7 @@
             background: var(--btn-inactive); color: var(--text-color); border: 1px solid var(--search-border);
             border-radius: 10px; padding: 10px 20px; cursor: pointer;
             font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s;
         }
-        .refresh-btn:hover { border-color: var(--btn-active); }
-        .refresh-btn:active { background: var(--btn-active); color: white; transform: scale(0.98); }
 
         .sidebar {
             position: fixed; top: 0; right: -320px; width: 300px; height: 100%;
@@ -125,12 +120,13 @@
         .modal-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 3000; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; box-sizing: border-box;
+            flex-direction: column; align-items: center; padding: 30px 20px; box-sizing: border-box;
+            overflow-y: auto;
         }
-        .modal-content { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 15px; }
+        .modal-content { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
         .setting-group { background: var(--card-bg); padding: 15px 20px; border-radius: 15px; border: 1px solid var(--search-border); }
-        .close-btn { background: var(--danger-color); color: white; padding: 16px; border-radius: 12px; border: none; font-weight: bold; width: 100%; }
+        .info-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-color); margin-bottom: 10px; }
+        .close-btn { background: var(--danger-color); color: white; padding: 16px; border-radius: 12px; border: none; font-weight: bold; width: 100%; cursor: pointer; }
         
         #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 5px; font-size: 0.85rem; width: 100%; max-width: 480px; text-align: left; padding-left: 5px;}
@@ -145,12 +141,12 @@
 
     <div class="control-area">
         <div class="search-container">
-            <input type="search" id="search-input" placeholder="🔍 搜尋中泰文..." oninput="handleSearch()">
+            <input type="search" id="search-input" placeholder="🔍 輸入中文或泰文搜尋......." oninput="handleSearch()">
         </div>
         <div id="search-info"></div>
         <div class="action-row">
             <button id="refresh-btn-main" class="refresh-btn" onclick="refreshContent()">
-                <span>🔄 換一批隨機</span>
+                <span>🔄 換一批</span>
             </button>
         </div>
     </div>
@@ -183,12 +179,45 @@
         </div>
 
         <div class="sidebar-section">
-            <span class="sidebar-label">系統設置</span>
+            <span class="sidebar-label">系統與說明</span>
+            <button class="side-full-btn" onclick="openModal('about-page')">ℹ️ 關於本站</button>
             <button class="side-full-btn" onclick="openModal('settings-page')">⚙️ 偏好設定</button>
             <button class="side-full-btn" onclick="openModal('links-page')">🔗 外部資源</button>
         </div>
         
         <button class="close-btn" style="background: var(--nav-bg); color: var(--sub-text);" onclick="toggleSidebar()">關閉選單</button>
+    </div>
+
+    <div id="about-page" class="modal-page">
+        <div class="modal-content">
+            <h2 style="text-align:center">ℹ️ 關於本站</h2>
+            
+            <div class="setting-group">
+                <span class="sidebar-label">📚 內容來源</span>
+                <p class="info-text">本 App 內容主要由開發者<b>手動收集</b>與編寫，部分詞彙與例句經由 <b>AI (Gemini)</b> 協助進行格式整理、翻譯校對與潤飾，旨在提供更精確的練習材料。</p>
+            </div>
+
+            <div class="setting-group">
+                <span class="sidebar-label">🎲 抽選邏輯</span>
+                <p class="info-text">
+                    • <b>全域隨機</b>：從「網抓、泰二、Ben、自建」四大題庫中隨機抽選 10 筆。<br>
+                    • <b>分類模式</b>：從指定的單一分類中抽選 10 筆。<br>
+                    • <b>搜尋模式</b>：關鍵字匹配全題庫資料，不限筆數。
+                </p>
+            </div>
+
+            <div class="setting-group">
+                <span class="sidebar-label">🔊 語音說明</span>
+                <p class="info-text">語音採用瀏覽器內建的 <b>TTS 技術</b>。發音準確度取決於您的裝置系統語言包，僅供聽力練習輔助參考。</p>
+            </div>
+
+            <div class="setting-group">
+                <span class="sidebar-label">🔄 資料更新</span>
+                <p class="info-text">所有資料存放於 Google 雲端試算表，每次開啟 App 時會自動同步最新內容。</p>
+            </div>
+
+            <button class="close-btn" onclick="closeModal('about-page')">返回</button>
+        </div>
     </div>
 
     <div id="settings-page" class="modal-page">
@@ -206,7 +235,7 @@
                 <span class="sidebar-label">🔤 字體 (<span id="font-val">32</span>px)</span>
                 <input type="range" id="font-slider" min="20" max="48" step="1" value="32" oninput="updateFontSize(this.value)" style="width:100%">
             </div>
-            <button class="close-btn" onclick="closeModal('settings-page')">儲存返回</button>
+            <button class="close-btn" onclick="closeModal('settings-page')">儲存並返回</button>
         </div>
     </div>
 
@@ -220,6 +249,7 @@
     </div>
 
     <script>
+        // JS 部分保持之前的邏輯，僅需注意 modal ID 對應即可
         const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
         const gids = { 
             custom: { name: "網抓", id: "538865502" }, 
@@ -333,7 +363,6 @@
             const results = allData.filter(item => item.thai.toLowerCase().includes(kw) || item.chinese.toLowerCase().includes(kw));
             renderList(results);
             document.getElementById('search-info').innerText = `找到 ${results.length} 筆結果`;
-            // 搜尋模式下隱藏換一組按鈕，避免誤按
             document.getElementById('refresh-btn-main').style.display = 'none';
             clearActiveButtons();
         }

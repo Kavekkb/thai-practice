@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰語隨身練 Pro</title>
+    <title>泰語隨身練</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -138,7 +138,7 @@
             <button class="source-btn" onclick="switchSource('color', this)">顏色</button>
             <button class="source-btn" onclick="switchSource('ben', this)">Ben</button>
             <button class="source-btn" onclick="switchSource('self', this)">自建</button>
-            <button id="btn-fav" class="source-btn" style="color: var(--star-color);" onclick="showFavorites(this)">⭐ 收藏</button>
+            <button id="btn-fav" class="source-btn" style="color: var(--star-color);" onclick="showFavorites(this)">收藏</button>
         </div>
     </div>
 
@@ -153,7 +153,11 @@
     <div id="app"></div>
 
     <div id="settings-page">
-        <h2 style="margin-bottom: 20px;">⚙️ 設定與資源</h2>
+        <h2 style="margin-bottom: 20px;">⚙️ 設定與外部資源</h2>
+        <p style="color: var(--sub-text); font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; text-align: center; padding: 0 10px;">
+    點選上方來源可切換題庫來源，系統預設隨機顯示10句。
+    利用搜尋框可即時查找全表內容，並透過滑桿自訂語速與字體大小。
+        </p>
         <div class="settings-content">
             <div class="setting-group">
                 <span class="setting-label">黑/白模式</span>
@@ -173,7 +177,7 @@
                     <input type="range" id="font-slider" min="14" max="48" step="1" value="32" oninput="updateFontSize(this.value)">
                 </div>
             </div>
-            <span class="setting-label" style="margin-left: 5px;">🔗 外部學習資源</span>
+            <span class="setting-label" style="margin-left: 5px;">外部連結</span>
             <a href="https://thai-alphabet.com/" target="_blank" class="link-item">thai-alphabet</a>
             <a href="https://www.thai2english.com/" target="_blank" class="link-item">thai2english</a>
             <button class="close-btn" onclick="toggleSettings(false)">儲存並返回</button>

@@ -203,7 +203,7 @@
         <div class="action-row">
             <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
             <button id="refresh-btn-main" class="refresh-btn" onclick="refreshContent()">
-                <span>🔄 換字卡</span>
+                <span>🔄 字卡更新</span>
             </button>
         </div>
     </div>
@@ -220,18 +220,16 @@
             <button id="btn-fav" class="side-full-btn" style="color:var(--star-color);" onclick="showFavorites(this)">⭐ 已加星號</button>
         </div>
 
-        <div class="sidebar-section">
+       <div class="sidebar-section">
             <span class="sidebar-label">分類詞庫</span>
             <div class="grid-selector">
                 <button class="source-btn" onclick="switchSource('custom', this)">網抓</button>
                 <button class="source-btn" onclick="switchSource('thai2', this)">泰二</button>
-                <button class="source-btn" onclick="switchSource('calendar', this)">星期月份</button>
+                <button class="source-btn" onclick="switchSource('calendar', this)">月份星期</button>
                 <button class="source-btn" onclick="switchSource('time', this)">時間</button>
-                <button class="source-btn" onclick="switchSource('self_sent', this)">自建句子</button>
-                <button class="source-btn" onclick="switchSource('self_word', this)">自建單字</button>
+                <button class="source-btn" onclick="switchSource('self', this)">自建</button>
             </div>
         </div>
-
         <div class="sidebar-section">
             <span class="sidebar-label">系統與說明</span>
             <button class="side-full-btn" onclick="openModal('about-page')">ℹ️ 關於本站</button>
@@ -328,14 +326,13 @@
     <script>
         const base_url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu/pub?output=csv`;
         
-        // 1. 更新為最新的 6 個 GID
+    // 更新為妳指定的 5 個 GID
         const gids = { 
             custom: { name: "網抓", id: "538865502" }, 
             thai2: { name: "泰二", id: "2121125782" }, 
             time: { name: "時間", id: "1355116620" }, 
             calendar: { name: "月份星期", id: "1685596903" }, 
-            self_sent: { name: "自建句子", id: "1620358085" },
-            self_word: { name: "自建單字", id: "1725449061" }
+            self: { name: "自建", id: "1725449061" }
         };
 
         let allData = [];
@@ -386,8 +383,7 @@
         const savedFontSize = localStorage.getItem('thai_font_size') || 30;
         updateFontSize(savedFontSize);
 
-        // 資料初始化
-        async function initAllData() {
+    async function initAllData() {
             try {
                 const cacheBuster = new Date().getTime();
                 const fetchPromises = Object.keys(gids).map(async (key) => {
@@ -406,7 +402,10 @@
                 allData = results.flat();
                 document.getElementById('loading').style.display = 'none';
                 displayRandom();
-                refreshSiteStats();
+                
+                // 確保這行存在，用來更新「關於本站」的資訊
+                refreshSiteStats(); 
+                
             } catch (e) { document.getElementById('loading').innerText = '資料同步失敗'; }
         }
 

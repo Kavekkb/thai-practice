@@ -96,7 +96,7 @@
             max-width: 480px; 
             display: flex; 
             align-items: center;
-            justify-content: space-between; /* 確保左右對齊 */
+            justify-content: space-between;
             box-sizing: border-box;
             border: 1px solid rgba(0,0,0,0.05); 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -106,7 +106,6 @@
             cursor: pointer;
         }
         .card:active { transform: scale(0.98); }
-
         .card-content { flex-grow: 1; padding-right: 15px; }
 
         .quiz-mode .chinese { opacity: 0; transition: opacity 0.3s; }
@@ -137,13 +136,17 @@
         .source-btn { padding: 12px 2px; border-radius: 10px; border: none; background: var(--btn-inactive); color: var(--sub-text); font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .source-btn.active, .side-full-btn.active { background: var(--btn-active) !important; color: white !important; }
         .side-full-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--nav-bg); color: var(--text-color); margin-bottom: 8px; text-align: left; cursor: pointer; font-weight: bold; }
+        
         .modal-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 3000; display: none; flex-direction: column; align-items: center; padding: 30px 20px; box-sizing: border-box; overflow-y: auto; }
         .modal-content { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
-        .setting-group { background: var(--card-bg); padding: 15px 20px; border-radius: 15px; border: 1px solid var(--search-border); }
-        .info-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-color); margin-bottom: 10px; }
-        .close-btn { background: var(--danger-color); color: white; padding: 16px; border-radius: 12px; border: none; font-weight: bold; width: 100%; cursor: pointer; }
+        .setting-group { background: var(--card-bg); padding: 15px 20px; border-radius: 15px; border: 1px solid var(--search-border); margin-bottom: 10px; }
+        .info-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-color); margin-bottom: 5px; }
+        .desc-text { font-size: 0.8rem; color: var(--sub-text); margin-top: 5px; }
+        .close-btn { background: var(--danger-color); color: white; padding: 16px; border-radius: 12px; border: none; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
+        
         #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 0; font-size: 0.85rem; text-align: right; }
+        input[type="number"] { background: var(--search-bg); color: var(--text-color); border: 1px solid var(--search-border); font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -217,10 +220,6 @@
                 <span class="sidebar-label">🎲 抽選邏輯</span>
                 <p class="info-text">• 隨機字卡：從所有分類隨機抽選設定題數<br>• 分類隨機：從指定分類中抽選設定題數<br>• 搜尋模式：輸入關鍵字可搜尋所有資料</p>
             </div>
-            <div class="setting-group">
-                <span class="sidebar-label">🔊 語音說明</span>
-                <p class="info-text">• 語音採用瀏覽器內建 TTS 技術<br>• 發音準確度取決於您裝置系統語言包</p>
-            </div>
             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--sub-text); font-size: 0.85rem; color: var(--sub-text); line-height: 1.8;">
                 <div id="stat-total-count">詞庫總筆數：更新中...</div>
                 <div id="stat-last-update">最後更新時間：載入中...</div>
@@ -234,21 +233,26 @@
             <h2 style="text-align:center">⚙️ 偏好設定</h2>
             <div class="setting-group">
                 <span class="sidebar-label">🌓 主題切換</span>
+                <p class="info-text">更換介面配色</p>
                 <button id="theme-toggle" class="side-full-btn" style="text-align:center; background:var(--btn-active); color:white;" onclick="toggleTheme()">切換模式</button>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">🔊 語音語速</span>
+                <p class="info-text">調整泰文發音的速度</p>
                 <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateSpeed(this.value)" style="width:100%">
-                <div style="text-align:center; font-size: 0.8rem; color: var(--sub-text); margin-top: 5px;">目前語速：<span id="speed-val">1.0</span>x</div>
+                <div class="desc-text" style="text-align:center">目前語速：<span id="speed-val">1.0</span>x</div>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">📏 字體大小</span>
-                <input type="range" id="font-slider" min="24" max="38" step="1" value="30" oninput="updateFontSize(this.value)" style="width:100%">
-                <div style="text-align:center; font-size: 0.8rem; color: var(--sub-text); margin-top: 5px;">目前大小：<span id="font-val">30</span>px</div>
+                <p class="info-text">調整字卡中泰文的大小</p>
+                <input type="range" id="font-slider" min="24" max="42" step="1" value="30" oninput="updateFontSize(this.value)" style="width:100%">
+                <div class="desc-text" style="text-align:center">目前大小：<span id="font-val">30</span>px</div>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">📝 練習題數</span>
-                <input type="number" id="quiz-count-input" min="10" max="30" value="10" onchange="updateQuizCount(this.value)" style="width:100%; padding: 8px; border-radius: 8px;">
+                <p class="info-text">設定每次隨機抽選的字卡數量 (10-30)</p>
+                <input type="number" id="quiz-count-input" min="10" max="30" value="10" onchange="updateQuizCount(this.value)" style="width:100%; padding: 12px; border-radius: 8px; box-sizing: border-box;">
+                <p class="desc-text">※ 更改後請點擊首頁「🔄 更新」按鈕生效</p>
             </div>
             <button class="close-btn" onclick="closeModal('settings-page')">儲存並返回</button>
         </div>
@@ -257,8 +261,8 @@
     <div id="links-page" class="modal-page">
         <div class="modal-content">
             <h2 style="text-align:center">🔗 外部資源</h2>
-            <a href="https://thai-alphabet.com/" target="_blank" class="side-full-btn" style="text-decoration:none; text-align:center; color:var(--link-color)">Thai Alphabet</a>
-            <a href="https://www.thai2english.com/" target="_blank" class="side-full-btn" style="text-decoration:none; text-align:center; color:var(--link-color)">thai2english</a>
+            <a href="https://thai-alphabet.com/" target="_blank" class="side-full-btn" style="text-decoration:none; text-align:center; color:var(--link-color)">Thai Alphabet (字母練習)</a>
+            <a href="https://www.thai2english.com/" target="_blank" class="side-full-btn" style="text-decoration:none; text-align:center; color:var(--link-color)">thai2english (單字查詢)</a>
             <button class="close-btn" onclick="closeModal('links-page')">返回</button>
         </div>
     </div>
@@ -295,7 +299,8 @@
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('thai_theme', theme);
-            document.getElementById('theme-toggle').innerText = theme === 'light' ? '切換至深色模式' : '切換至淺色模式';
+            const btn = document.getElementById('theme-toggle');
+            if(btn) btn.innerText = theme === 'light' ? '切換至深色模式' : '切換至淺色模式';
         }
         setTheme(localStorage.getItem('thai_theme') || 'dark');
         function toggleTheme() { setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); }
@@ -311,7 +316,6 @@
             document.getElementById('font-slider').value = size;
         }
         updateFontSize(localStorage.getItem('thai_font_size') || 30);
-        document.getElementById('quiz-count-input').value = quizCount;
 
         async function initAllData() {
             try {
@@ -352,7 +356,6 @@
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.onclick = function(e) { if (isQuizMode && !e.target.closest('button')) this.classList.toggle('revealed'); };
-                // 喇叭靠右結構
                 div.innerHTML = `
                     <div class="card-content">
                         <div class="thai" lang="th">${item.thai}</div>
@@ -372,11 +375,7 @@
                 const cleanInput = document.getElementById('search-input').value.trim().toLowerCase();
                 if (!cleanInput) { handleRefresh(); return; }
                 const results = allData.filter(item => item.thai.toLowerCase().includes(cleanInput) || item.chinese.toLowerCase().includes(cleanInput));
-                if (results.length === 0) {
-                    document.getElementById('app').innerHTML = `<div style="margin-top:50px; text-align:center; color:var(--sub-text);"><div style="font-size: 3rem; margin-bottom: 10px;">🔍</div><div>找不到「${cleanInput}」相關詞彙</div></div>`;
-                } else {
-                    renderList(results);
-                }
+                renderList(results);
                 document.getElementById('search-info').innerText = `搜尋結果：${results.length} 筆`;
             }, 300);
         }

@@ -164,8 +164,17 @@
     letter-spacing: 0.5px; /* 增加微小字距，幫助辨識每個字母的邊界 */
     word-wrap: break-word; 
     padding-right: 25px;
+
+            /* 新增以下三行優化長句子 */
+    word-break: break-word;       /* 確保長句子會自動斷行 */
+    overflow-wrap: break-word;    /* 支援更多瀏覽器的斷行邏輯 */
+    display: block;               /* 確保佔滿寬度 */
 }
-        .chinese { font-size: var(--zh-size); color: var(--sub-text); }
+        .chinese {
+    font-size: var(--zh-size);
+    color: var(--sub-text);
+    margin-top: 8px; /* 增加與泰文之間的呼吸空間 */
+}
         .btn-speak { border: none; background: transparent; color: var(--accent-color); font-size: 2.2rem; cursor: pointer; }
 
         .modal-page {

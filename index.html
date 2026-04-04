@@ -190,6 +190,14 @@
         
         #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 0; font-size: 0.85rem; text-align: right; }
+
+        /* 播放中的按鈕動畫 */
+.btn-speak.playing {
+    transform: scale(1.3);
+    color: var(--btn-active);
+    filter: drop-shadow(0 0 5px var(--btn-active));
+    transition: all 0.2s;
+}
     </style>
 </head>
 <body>
@@ -364,7 +372,7 @@
         let currentMode = 'random';
         let currentSourceKey = null;
         let isQuizMode = false;
-
+        let searchTimer;
         // UI 核心功能
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -532,29 +540,36 @@ function displayRandom() {
             else if (currentMode === 'fav') showFavorites(document.getElementById('btn-fav'));
         }
 
- function handleSearch() {
-            // 取得輸入值
-            let rawInput = document.getElementById('search-input').value;
-            
-            // 【新增這行】過濾掉 < 和 > 符號，防止 HTML 注入 (XSS)
-            let cleanInput = rawInput.replace(/[<>]/g, "").trim().toLowerCase();
-            
-            // 如果清理後是空的，就不處理或顯示全部（視妳原本邏輯而定）
-            if (!cleanInput) {
-                // 這裡通常是呼叫妳原本顯示全部資料的函式，例如：
-                // renderList(currentCategoryData); 
-                return;
-            }
-
-            // 【使用 cleanInput 進行過濾】
-            // 確保搜尋的是清理過的乾淨字串
-            const results = allData.filter(item => 
-                (item.thai && item.thai.toLowerCase().includes(cleanInput)) || 
-                (item.chinese && item.chinese.toLowerCase().includes(cleanInput))
-            );
-            
+function handleSearch() {
+    clearTimeout(searchTimer); // 每次輸入都先清除舊的計時器
+    searchTimer = setTimeout(() => {
+        const inputElement = document.getElementById('search-input');
+        const cleanInput = inputElement.value.replace(/[<>]/g, "").trim().toLowerCase();
+        
+        if (!cleanInput) { 
+            handleRefresh(); 
+            return; 
+        }
+        
+        const results = allData.filter(item => 
+            item.thai.toLowerCase().includes(cleanInput) || 
+            item.chinese.toLowerCase().includes(cleanInput)
+        );
+        
+        // 空搜尋結果處理：如果沒找到，顯示提示語
+        if (results.length === 0) {
+            document.getElementById('app').innerHTML = `
+                <div style="margin-top:50px; text-align:center; color:var(--sub-text);">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">🔍</div>
+                    <div>找不到「${cleanInput}」相關詞彙</div>
+                </div>`;
+            document.getElementById('search-info').innerText = `搜尋結果：0 筆`;
+        } else {
+            document.getElementById('search-info').innerText = `搜尋結果：${results.length} 筆`;
             renderList(results);
         }
+    }, 300); // 延遲 300 毫秒執行
+}
 
    function switchSource(key, btn) {
             currentMode = key; // 紀錄目前選中的分類 (key 可能為 'custom', 'thai2' 等)
@@ -614,14 +629,15 @@ function displayRandom() {
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.onclick = function(e) { if (isQuizMode && !e.target.closest('button')) this.classList.toggle('revealed'); };
-                div.innerHTML = `
-                    <div class="card-header">
-                        <span class="source-tag">${item.source}</span>
-                        <button class="btn-star ${favorites.includes(item.id) ? 'favorited' : ''}" onclick="event.stopPropagation(); toggleFavorite('${item.id}', this)">★</button>
-                    </div>
-                    <div><div class="thai">${item.thai}</div><div class="chinese">${item.chinese}</div></div>
-                    <button class="btn-speak" onclick="event.stopPropagation(); speak('${item.thai}')">🔊</button>
-                `;
+              // 新的寫法：增加了 this，代表把「按鈕自己」也傳進去 speak 函式裡
+div.innerHTML = `
+    <div class="card-content">
+        <div class="thai" lang="th">${item.thai}</div> <div class="chinese">${item.chinese}</div>
+    </div>
+    <div class="card-action">
+        <button class="btn-speak" onclick="speak('${item.thai}', this)">🔊</button> 
+    </div>
+`;
                 container.appendChild(div);
             });
         }
@@ -633,16 +649,36 @@ function displayRandom() {
             btn.classList.toggle('favorited');
         }
 
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'th-TH'; msg.rate = currentSpeed;
-            window.speechSynthesis.speak(msg);
-        }
+   function speak(text, btnElement) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'th-TH';
+    msg.rate = currentSpeed;
+
+    // 開始播放時增加 Class
+    if (btnElement) btnElement.classList.add('playing');
+
+    msg.onend = () => {
+        // 播放結束移除 Class
+        if (btnElement) btnElement.classList.remove('playing');
+    };
+
+    window.speechSynthesis.speak(msg);
+}
 
         function clearActiveButtons() { document.querySelectorAll('.source-btn, .side-full-btn').forEach(btn => btn.classList.remove('active')); }
 
         initAllData();
+        window.onscroll = function() {
+    const btn = document.getElementById("back-to-top");
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        btn.style.display = "block";
+    } else {
+        btn.style.display = "none";
+    }
+};
     </script>
+    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+    style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:99; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);">↑</button>
 </body>
 </html>

@@ -107,7 +107,6 @@
         }
         .chinese { font-size: var(--zh-size); color: var(--sub-text); margin-top: 8px; word-break: break-word; }
         
-        /* 來源與語音佈局 */
         .card-action { 
             display: flex; flex-direction: column; align-items: flex-end; 
             justify-content: center; gap: 8px; min-width: 70px;
@@ -122,7 +121,6 @@
             white-space: nowrap;
         }
 
-        /* 恢復星號收藏功能 CSS */
         .btn-fav { position: absolute; top: 12px; right: 12px; background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #555; transition: 0.2s; padding: 5px; z-index: 5; }
         .btn-fav.active { color: var(--star-color); text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
 
@@ -217,7 +215,11 @@
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">📚 內容相關</span>
-                <p class="info-text">• 字卡內容由開發者收集彙整後呈現<br>• 點字卡右上角星號可將其加入收藏<br>• 測驗模式會遮蔽中文，再點一次字卡即可顯示</p>
+                <p class="info-text">
+                    • 字卡內容由開發者收集彙整後呈現<br>
+                    • 點字卡右上角星號可將其加入收藏<br>
+                    • 測驗模式會遮蔽中文，再點一次字卡即可顯示<br>
+                    • 輪播模式會播放畫面中每個字卡2次，再點一次字卡即可停止</p>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">🎲 抽選邏輯</span>
@@ -283,8 +285,9 @@
     <div id="links-page" class="modal-page">
         <div class="modal-content">
             <h2 style="text-align:center">🔗 外部資源</h2>
-            <a href="https://thai-alphabet.com/" target="_blank" class="side-full-btn" style="text-decoration:none; text-align:center; color:var(--link-color)">Thai Alphabet</a>
-            <a href="https://www.thai2english.com/" target="_blank" class="side-full-btn" style="text-decoration:none; text-align:center; color:var(--link-color)">thai2english</a>
+            <div id="external-links-container" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="text-align: center; color: var(--sub-text);">正在同步資源...</p>
+            </div>
             <button class="close-btn" onclick="closeModal('links-page')">返回</button>
         </div>
     </div>
@@ -301,6 +304,8 @@
             self: { name: "自建", id: "1725449061" }
         };
 
+        const LINKS_GID = "370151406";
+
         let allData = [];
         let favorites = JSON.parse(localStorage.getItem('thai_favs')) || [];
         let currentMode = 'random';
@@ -311,7 +316,6 @@
         let quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
         let currentDisplayedList = [];
 
-        // 系統功能邏輯 (完全保留)
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');
@@ -365,7 +369,39 @@
                 document.getElementById('loading').style.display = 'none';
                 displayRandom();
                 refreshSiteStats();
+                initExternalLinks(); // 同步資源
             } catch (e) { document.getElementById('loading').innerText = '資料同步失敗'; }
+        }
+
+        async function initExternalLinks() {
+            try {
+                const response = await fetch(`${base_url}&gid=${LINKS_GID}&t=${Date.now()}`);
+                const csvText = await response.text();
+                const rows = csvText.split(/\r?\n/).slice(1); // 跳過標題列
+                const container = document.getElementById('external-links-container');
+                container.innerHTML = ''; // 清空讀取中字樣
+
+                rows.forEach(row => {
+                    const cols = row.split(',');
+                    if(cols.length >= 2) {
+                        const url = cols[0].trim();
+                        const name = cols[1].trim();
+                        if(url && name) {
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.target = "_blank";
+                            a.className = "side-full-btn";
+                            a.style.textDecoration = "none";
+                            a.style.textAlign = "center";
+                            a.style.color = "var(--link-color)";
+                            a.innerText = name;
+                            container.appendChild(a);
+                        }
+                    }
+                });
+            } catch (e) {
+                document.getElementById('external-links-container').innerHTML = '<p style="color:red; text-align:center;">外部資源載入失敗</p>';
+            }
         }
 
         function refreshSiteStats() {
@@ -378,7 +414,6 @@
             }
         }
 
-        // 修改重點：增加 Source Tag 並恢復收藏按鈕
         function renderList(list) {
             currentDisplayedList = list;
             const container = document.getElementById('app');

@@ -73,17 +73,17 @@
             color: var(--text-color); font-size: 1rem; box-sizing: border-box; outline: none;
         }
         .action-row {
-            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px;
         }
         .refresh-btn {
             background: var(--btn-inactive); color: var(--text-color); border: 1px solid var(--search-border);
-            border-radius: 10px; padding: 10px 20px; cursor: pointer;
+            border-radius: 10px; padding: 10px 15px; cursor: pointer;
             font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;
         }
 
         .quiz-toggle {
             background: var(--btn-inactive); color: var(--text-color); border: 1px solid var(--search-border);
-            border-radius: 10px; padding: 10px 15px; cursor: pointer; font-size: 0.9rem; font-weight: bold;
+            border-radius: 10px; padding: 10px 15px; cursor: pointer; font-size: 0.9rem; font-weight: bold; flex: 1;
         }
         .quiz-toggle.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
         
@@ -151,6 +151,7 @@
         </div>
         <div class="action-row">
             <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
+            <button id="autoplay-btn" class="quiz-toggle" onclick="toggleAutoplay()">📢 輪播模式</button>
             <div id="refresh-btn-main" class="refresh-btn" onclick="handleRefresh()" style="display: flex;">
                 <span>🔄 更新</span>
             </div>
@@ -293,9 +294,11 @@
         let favorites = JSON.parse(localStorage.getItem('thai_favs')) || [];
         let currentMode = 'random';
         let isQuizMode = false;
+        let isAutoplay = false; // 輪播狀態
         let searchTimer;
         let currentSpeed = parseFloat(localStorage.getItem('thai_speed')) || 1.0;
         let quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
+        let currentDisplayedList = []; // 存儲目前頁面顯示的資料
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -364,12 +367,14 @@
         }
 
         function renderList(list) {
+            currentDisplayedList = list; // 更新當下顯示的清單供輪播使用
             const container = document.getElementById('app');
             container.innerHTML = list.length === 0 ? '<div style="margin-top:30px;color:#666;text-align:center;">無相關詞庫</div>' : '';
             container.className = isQuizMode ? 'quiz-mode' : '';
-            list.forEach(item => {
+            list.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'card';
+                div.id = `card-${index}`; // 方便輪播時視覺識別
                 div.onclick = function(e) { if (isQuizMode && !e.target.closest('button')) this.classList.toggle('revealed'); };
                 div.innerHTML = `
                     <div class="card-content">
@@ -396,6 +401,7 @@
         }
 
         function handleRefresh() {
+            stopAutoplay(); // 重置或更新時停止輪播
             quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
             if (currentMode === 'random') displayRandom();
             else if (currentMode === 'fav') showFavorites(document.getElementById('btn-fav'));
@@ -445,6 +451,68 @@
             btn.classList.toggle('active');
             btn.innerText = isQuizMode ? '🙈 測驗模式：ON' : '👁️ 測驗模式';
             handleRefresh();
+        }
+
+        // 輪播功能實作
+        function toggleAutoplay() {
+            if (isAutoplay) {
+                stopAutoplay();
+            } else {
+                if (currentDisplayedList.length === 0) return;
+                isAutoplay = true;
+                const btn = document.getElementById('autoplay-btn');
+                btn.classList.add('active');
+                btn.innerText = '⏹️ 停止輪播';
+                startAutoplayLogic();
+            }
+        }
+
+        function stopAutoplay() {
+            isAutoplay = false;
+            window.speechSynthesis.cancel();
+            const btn = document.getElementById('autoplay-btn');
+            btn.classList.remove('active');
+            btn.innerText = '📢 輪播模式';
+            document.querySelectorAll('.card').forEach(c => c.style.borderColor = 'rgba(0,0,0,0.05)');
+        }
+
+        async function startAutoplayLogic() {
+            for (let i = 0; i < currentDisplayedList.length; i++) {
+                if (!isAutoplay) break;
+                
+                const item = currentDisplayedList[i];
+                const card = document.getElementById(`card-${i}`);
+                
+                // 視覺標示正在播放哪一個
+                if(card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.borderColor = 'var(--btn-active)';
+                }
+
+                // 播放兩次
+                await speakPromise(item.thai);
+                if (!isAutoplay) break;
+                await new Promise(r => setTimeout(r, 500)); // 兩次之間的間隔
+                await speakPromise(item.thai);
+                
+                if(card) card.style.borderColor = 'rgba(0,0,0,0.05)';
+                await new Promise(r => setTimeout(r, 1000)); // 單字之間的間隔
+                
+                // 播完最後一個自動結束
+                if (i === currentDisplayedList.length - 1) stopAutoplay();
+            }
+        }
+
+        function speakPromise(text) {
+            return new Promise((resolve) => {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'th-TH';
+                msg.rate = currentSpeed;
+                msg.onend = () => resolve();
+                msg.onerror = () => resolve();
+                window.speechSynthesis.speak(msg);
+            });
         }
 
         function speak(text, btnElement) {

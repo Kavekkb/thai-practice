@@ -442,6 +442,54 @@ async function initExternalLinks() {
             }
         }
 
+function convertNumbersToThaiText(text) {
+    const thaiNumbers = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+    const units = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+
+    // 同時支援阿拉伯數字 (0-9) 與 泰文數字 (๐-๙)
+    const arabicText = text.replace(/[๐-๙]/g, d => "๐๑๒๓๔๕๖๗๘๙".indexOf(d));
+
+    return arabicText.replace(/\d+/g, (match) => {
+        let n = parseInt(match);
+        if (n === 0) return thaiNumbers[0];
+        
+        let str = '';
+        let numStr = match;
+        let len = numStr.length;
+
+        for (let i = 0; i < len; i++) {
+            let digit = parseInt(numStr[i]);
+            let position = (len - i - 1) % 6; // 泰文每 6 位數（百萬）一個循環
+            
+            if (digit !== 0) {
+                // 1. 處理「個位數」的 1 (唸作 Et)
+                // 條件：必須不是唯一的一位數，且位於個位
+                if (position === 0 && digit === 1 && len > 1) {
+                    str += 'เอ็ด';
+                } 
+                // 2. 處理「十位數」的 2 (唸作 Yi)
+                else if (position === 1 && digit === 2) {
+                    str += 'ยี่สิบ';
+                }
+                // 3. 處理「十位數」的 1 (唸作 Sip，省略前面的 Nueng)
+                else if (position === 1 && digit === 1) {
+                    str += 'สิบ';
+                }
+                // 4. 一般情況：數字 + 單位
+                else {
+                    str += thaiNumbers[digit] + units[position];
+                }
+            }
+            
+            // 5. 處理百萬位數的循環 (Lan)
+            if (i < len - 1 && (len - i - 1) % 6 === 0) {
+                str += 'ล้าน';
+            }
+        }
+        return str;
+    });
+}
+        
         function renderList(list) {
             currentDisplayedList = list;
             const container = document.getElementById('app');

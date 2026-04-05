@@ -111,7 +111,19 @@
             display: flex; flex-direction: column; align-items: flex-end; 
             justify-content: center; gap: 8px; min-width: 70px;
         }
-        .btn-speak { border: none; background: transparent; color: var(--accent-color); font-size: 2.2rem; cursor: pointer; transition: all 0.2s; padding: 0; }
+        .btn-speak { 
+    position: absolute; 
+    bottom: 8px;        /* 稍微往右下角退，拉開與上方星號的距離 */
+    right: 8px;         /* 同上 */
+    border: none; 
+    background: transparent; 
+    color: var(--accent-color); 
+    font-size: 1.8rem;  /* 圖示視覺變小，增加中間空白處 */
+    padding: 15px;      /* 增加內距，確保小圖示依然有足夠的感應範圍 */
+    cursor: pointer; 
+    transition: all 0.2s; 
+    z-index: 6; 
+}
         .btn-speak.playing { transform: scale(1.3); color: var(--btn-active); filter: drop-shadow(0 0 5px var(--btn-active)); }
 
         .source-tag {
@@ -121,7 +133,19 @@
             white-space: nowrap;
         }
 
-        .btn-fav { position: absolute; top: 12px; right: 12px; background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #555; transition: 0.2s; padding: 5px; z-index: 5; }
+       .btn-fav { 
+    position: absolute; 
+    top: 8px;           /* 往右上角退，遠離下方的喇叭 */
+    right: 8px; 
+    background: transparent; 
+    border: none; 
+    font-size: 1.4rem; 
+    cursor: pointer; 
+    color: #555; 
+    transition: 0.2s; 
+    padding: 12px;      /* 適中的感應範圍 */
+    z-index: 5;
+}
         .btn-fav.active { color: var(--star-color); text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
 
         .sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--bg-color); box-shadow: -5px 0 15px rgba(0,0,0,0.3); transition: 0.3s ease; z-index: 2000; padding: 25px; overflow-y: auto; box-sizing: border-box; }

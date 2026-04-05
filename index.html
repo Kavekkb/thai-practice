@@ -200,13 +200,17 @@
                 <span class="sidebar-label">📚 內容相關</span>
                 <p class="info-text">• 字卡內容由開發者收集彙整後呈現<br>• 點字卡右上角星號可將其加入收藏<br>• 測驗模式會遮蔽中文，再點一次字卡即可顯示</p>
             </div>
-            <div class="setting-group">
-                <span class="sidebar-label">🔊 音訊相關</span>
-                <p class="info-text">• 喇叭在右邊是因為這只是練習<br>• 怕你太依賴聽力而不是看字<br>• 音訊皆為系統產生，僅供發音參考</p>
-            </div>
+        
             <div class="setting-group">
                 <span class="sidebar-label">🎲 抽選邏輯</span>
-                <p class="info-text">• 隨機字卡：從所有分類隨機抽選設定題數<br>• 分類隨機：從指定分類中抽選設定題數<br>• 搜尋模式：輸入關鍵字可搜尋所有資料</p>
+                <p class="info-text">• 隨機字卡：從所有分類隨機抽選設定題數<br>• 分類隨機：從指定分類中抽選設定題數<br>• 搜尋模式：輸入關鍵字可搜尋所有詞庫資料</p>
+            </div>
+            <div class="setting-group">
+                <span class="sidebar-label">🔊 語音說明</span>
+                <p class="info-text">
+                    • 語音採用瀏覽器內建的 TTS 技術<br>
+                    • 發音準確度取決於您裝置系統語言包<br>
+                </p>
             </div>
             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--sub-text); font-size: 0.85rem; color: var(--sub-text); line-height: 1.8;">
                 <div id="stat-total-count">詞庫總筆數：更新中...</div>
@@ -226,13 +230,13 @@
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">🔊 語音語速</span>
-                <p class="info-text">調整泰文發音的速度</p>
+                <p class="info-text">調整發音語速</p>
                 <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateSpeed(this.value)" style="width:100%">
                 <div class="desc-text" style="text-align:center">目前語速：<span id="speed-val">1.0</span>x</div>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">📏 字體大小</span>
-                <p class="info-text">調整字卡中泰文的大小</p>
+                <p class="info-text">調整字卡的文字大小</p>
                 <input type="range" id="font-slider" min="24" max="42" step="1" value="30" oninput="updateFontSize(this.value)" style="width:100%">
                 <div class="desc-text" style="text-align:center">目前大小：<span id="font-val">30</span>px</div>
             </div>
@@ -240,7 +244,7 @@
                 <span class="sidebar-label">📝 練習題數</span>
                 <p class="info-text">設定每次隨機抽選的字卡數量 (10-30)</p>
                 <input type="number" id="quiz-count-input" min="10" max="30" value="10" onchange="updateQuizCount(this.value)" style="width:100%; padding: 12px; border-radius: 8px; box-sizing: border-box;">
-                <p class="desc-text">※ 更改後請點擊首頁「🔄 更新」按鈕生效</p>
+                <p class="desc-text">※ 更改後按首頁「🔄 更新」按鈕生效</p>
             </div>
             <button class="close-btn" onclick="closeModal('settings-page')">儲存並返回</button>
         </div>

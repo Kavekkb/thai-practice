@@ -73,15 +73,13 @@
             color: var(--text-color); font-size: 1rem; box-sizing: border-box; outline: none;
         }
         
-        /* 調整按鈕列佈局 */
         .action-row {
             display: flex; align-items: center; width: 100%; gap: 8px;
         }
         .left-actions {
-            display: flex; gap: 6px; flex-grow: 1; /* 讓左側佔據剩餘空間，推擠更新按鈕 */
+            display: flex; gap: 6px; flex-grow: 1; 
         }
 
-        /* 統一按鈕樣式：邊框僅比文字大一點 */
         .quiz-toggle, .refresh-btn {
             background: var(--btn-inactive); color: var(--text-color); border: 1px solid var(--search-border);
             border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.85rem; font-weight: bold;
@@ -109,8 +107,24 @@
         }
         .chinese { font-size: var(--zh-size); color: var(--sub-text); margin-top: 8px; word-break: break-word; }
         
-        .btn-speak { border: none; background: transparent; color: var(--accent-color); font-size: 2.2rem; cursor: pointer; transition: all 0.2s; }
+        /* 來源與語音佈局 */
+        .card-action { 
+            display: flex; flex-direction: column; align-items: flex-end; 
+            justify-content: center; gap: 8px; min-width: 70px;
+        }
+        .btn-speak { border: none; background: transparent; color: var(--accent-color); font-size: 2.2rem; cursor: pointer; transition: all 0.2s; padding: 0; }
         .btn-speak.playing { transform: scale(1.3); color: var(--btn-active); filter: drop-shadow(0 0 5px var(--btn-active)); }
+
+        .source-tag {
+            font-size: 0.7rem; color: var(--sub-text);
+            background: rgba(128, 128, 128, 0.1); padding: 2px 6px;
+            border-radius: 4px; border: 1px solid rgba(128, 128, 128, 0.2);
+            white-space: nowrap;
+        }
+
+        /* 恢復星號收藏功能 CSS */
+        .btn-fav { position: absolute; top: 12px; right: 12px; background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #555; transition: 0.2s; padding: 5px; z-index: 5; }
+        .btn-fav.active { color: var(--star-color); text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
 
         .sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--bg-color); box-shadow: -5px 0 15px rgba(0,0,0,0.3); transition: 0.3s ease; z-index: 2000; padding: 25px; overflow-y: auto; box-sizing: border-box; }
         .sidebar.open { right: 0; }
@@ -199,26 +213,19 @@
             <h2 style="text-align:center">ℹ️ 關於本站</h2>
             <div class="setting-group">
                 <span class="sidebar-label">🫩 關於這裡</span>
-                <p class="info-text">
-                    想練泰文口說搞出來的頁面<br>
-                    詞庫會不定時更新<br>
-                    內容有誤或是有其它指教再跟我說</p>
+                <p class="info-text">想練泰文口說搞出來的頁面<br>詞庫會不定時更新<br>內容有誤或是有其它指教再跟我說</p>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">📚 內容相關</span>
                 <p class="info-text">• 字卡內容由開發者收集彙整後呈現<br>• 點字卡右上角星號可將其加入收藏<br>• 測驗模式會遮蔽中文，再點一次字卡即可顯示</p>
             </div>
-        
             <div class="setting-group">
                 <span class="sidebar-label">🎲 抽選邏輯</span>
                 <p class="info-text">• 隨機字卡：從所有分類隨機抽選設定題數<br>• 分類隨機：從指定分類中抽選設定題數<br>• 搜尋模式：輸入關鍵字可搜尋所有詞庫資料</p>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">🔊 語音說明</span>
-                <p class="info-text">
-                    • 語音採用瀏覽器內建的 TTS 技術<br>
-                    • 發音準確度取決於您裝置系統語言包<br>
-                </p>
+                <p class="info-text">• 語音採用瀏覽器內建的 TTS 技術<br>• 發音準確度取決於您裝置系統語言包</p>
             </div>
             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--sub-text); font-size: 0.85rem; color: var(--sub-text); line-height: 1.8;">
                 <div id="stat-total-count">詞庫總筆數：更新中...</div>
@@ -304,6 +311,7 @@
         let quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
         let currentDisplayedList = [];
 
+        // 系統功能邏輯 (完全保留)
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');
@@ -370,27 +378,39 @@
             }
         }
 
+        // 修改重點：增加 Source Tag 並恢復收藏按鈕
         function renderList(list) {
             currentDisplayedList = list;
             const container = document.getElementById('app');
             container.innerHTML = list.length === 0 ? '<div style="margin-top:30px;color:#666;text-align:center;">無相關詞庫</div>' : '';
             container.className = isQuizMode ? 'quiz-mode' : '';
             list.forEach((item, index) => {
+                const isFav = favorites.includes(item.id);
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.id = `card-${index}`;
                 div.onclick = function(e) { if (isQuizMode && !e.target.closest('button')) this.classList.toggle('revealed'); };
                 div.innerHTML = `
+                    <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFav('${item.id}', this, event)">★</button>
                     <div class="card-content">
                         <div class="thai" lang="th">${item.thai}</div>
                         <div class="chinese">${item.chinese}</div>
                     </div>
                     <div class="card-action">
-                        <button class="btn-speak" onclick="speak('${item.thai}', this)">🔊</button>
+                        <button class="btn-speak" onclick="speak('${item.thai}', this, event)">🔊</button>
+                        <div class="source-tag">${item.source}</div>
                     </div>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function toggleFav(id, btn, e) {
+            e.stopPropagation();
+            if (favorites.includes(id)) favorites = favorites.filter(f => f !== id);
+            else favorites.push(id);
+            localStorage.setItem('thai_favs', JSON.stringify(favorites));
+            btn.classList.toggle('active');
         }
 
         function handleSearch() {
@@ -458,9 +478,8 @@
         }
 
         function toggleAutoplay() {
-            if (isAutoplay) {
-                stopAutoplay();
-            } else {
+            if (isAutoplay) { stopAutoplay(); } 
+            else {
                 if (currentDisplayedList.length === 0) return;
                 isAutoplay = true;
                 const btn = document.getElementById('autoplay-btn');
@@ -510,7 +529,8 @@
             });
         }
 
-        function speak(text, btnElement) {
+        function speak(text, btnElement, e) {
+            if(e) e.stopPropagation();
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'th-TH';

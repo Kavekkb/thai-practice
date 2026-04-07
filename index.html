@@ -654,13 +654,11 @@ function speak(text, btnElement, e) {
     // 1. 數字轉換
     let processedText = convertNumbersToThaiText(text).trim();
 
-    // 2. 終極修正：處理所有可能的 'Am' (Sara Am) 編碼
-    // 這裡使用了 Unicode 範圍匹配，確保不管是哪種 ำ 都會被抓到
-    // 我們將其替換成 'อัม' 的發音邏輯（短母音 a + 尾音 m）
-    processedText = processedText.replace(/[\u0e33\u0eb3]/g, 'ัม'); 
+    // 2. 終極修正：捕捉單一編碼與組合編碼的 Am 音
+    // 解決 ต้มยำ、กำลัง 被拆開唸的問題
+    processedText = processedText.replace(/[\u0e33\u0eb3]|\u0e4d\u0e32/g, 'ัม'); 
     
-    // 3. 額外補強：處理重複符號 'ๆ' (有些引擎看到它會發呆)
-    // 將 'ๆ' 替換成前面的最後一個字，強制讓引擎讀兩遍
+    // 3. 處理重複符號 'ๆ' (如 มากๆ -> มากมาก)
     processedText = processedText.replace(/(.)ๆ/g, '$1$1');
 
     const msg = new SpeechSynthesisUtterance(processedText);
@@ -672,7 +670,7 @@ function speak(text, btnElement, e) {
 
     if (bestVoice) msg.voice = bestVoice;
     msg.lang = 'th-TH';
-    msg.rate = 0.8; // 再放慢一點點，確保音節清晰
+    msg.rate = 0.8; 
 
     if (btnElement) btnElement.classList.add('playing');
     msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };

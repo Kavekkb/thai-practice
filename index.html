@@ -651,28 +651,27 @@ function speak(text, btnElement, e) {
     if(e) e.stopPropagation();
     window.speechSynthesis.cancel();
 
-    // 1. 數字轉換
     let processedText = convertNumbersToThaiText(text).trim();
 
-    // 2. 處理 Am 音編碼
+    // 處理 Am 音 (確保編碼對準)
     processedText = processedText.replace(/[\u0e33\u0eb3]|\u0e4d\u0e32/g, 'ัม'); 
     
-    // 3. 強化處理重複符號 'ๆ'
-    // 改用更精確的正則表達式：捕捉前面一組連續的泰文字符，然後重複它
-    // 如果 ๆ 前面有空格，則重複空格後的那個詞
-   // 抓取前面 2 到 6 個字元（涵蓋 99% 的泰文單字長度）
-    processedText = processedText.replace(/([ก-๙]{2,6})ๆ/g, '$1 $1');
+    // 處理重複符號：加入「逗號」產生微停頓，解決卡頓感
+    // 我們稍微放寬抓取長度到 1-6 字元，確保涵蓋大部分單字
+    processedText = processedText.replace(/([ก-๙]{1,6})ๆ/g, '$1, $1');
 
     const msg = new SpeechSynthesisUtterance(processedText);
     
-    // 4. 語音包設定
+    // 設定語音包
     const voices = window.speechSynthesis.getVoices();
     const bestVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Enhanced') || v.name.includes('Google')))
                     || voices.find(v => v.lang.includes('th'));
 
     if (bestVoice) msg.voice = bestVoice;
     msg.lang = 'th-TH';
-    msg.rate = 1; 
+    
+    // 琪，建議先設為 0.9 測試卡頓感，如果順了再改回 1.0
+    msg.rate = 0.9; 
 
     if (btnElement) btnElement.classList.add('playing');
     msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };

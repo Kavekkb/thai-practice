@@ -654,23 +654,24 @@ function speak(text, btnElement, e) {
     // 1. 基本數字轉換
     let processedText = convertNumbersToThaiText(text).trim();
 
-    // 2. 編碼標準化 (關鍵！)
-    // 使用 NFC 格式可以將拆散的母音符號重新組合成標準單一字元
-    processedText = processedText.normalize('NFC');
-
-    // 3. 針對 'am' 母音的特殊修正 (針對某些瀏覽器的 Bug)
-    // 有些引擎不認識組合符號，我們強制統一格式
-    processedText = processedText.replace(/\u0e3d/g, '\u0e32'); // 修正某些泰文編碼偏移
+    // 2. 核心修正：解決 'am' (ํา) 被拆開唸的問題
+    // 將 ํา (Sara Am) 替換為 ัม (短母音 a + 尾音 m)，發音完全相同但更穩定
+    processedText = processedText.replace(/ำ/g, 'ัม'); 
+    
+    // 3. 額外修正：解決 'เ-า' (Ao) 有時也會被拆開的問題 (選用)
+    // processedText = processedText.replace(/เอา/g, 'เ-า'); 
 
     const msg = new SpeechSynthesisUtterance(processedText);
     
-    // 4. 強制使用 Siri 或高品質語音 (如果有的話)
+    // 4. 強制語音設定
     const voices = window.speechSynthesis.getVoices();
-    const premiumVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Premium') || v.name.includes('Enhanced')));
-    if (premiumVoice) msg.voice = premiumVoice;
+    // 優先選 Siri 或 Premium
+    const bestVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Enhanced') || v.name.includes('Google')))
+                    || voices.find(v => v.lang.includes('th'));
 
+    if (bestVoice) msg.voice = bestVoice;
     msg.lang = 'th-TH';
-    msg.rate = 0.85; // 稍微放慢一點，讓引擎有時間解析組合母音
+    msg.rate = 0.85; // 稍慢的速度有助於正確發音
 
     if (btnElement) btnElement.classList.add('playing');
     msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };

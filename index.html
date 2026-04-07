@@ -254,7 +254,10 @@
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">🔊 語音說明</span>
-                <p class="info-text">• 語音採用瀏覽器內建的 TTS 技術<br>• 發音準確度取決於您裝置系統語言包</p>
+                <p class="info-text">
+                    • 語音採用瀏覽器內建的 TTS 技術<br>
+                    • 發音準確度取決於您裝置系統語言包<br>
+                </p>
             </div>
             <div class="setting-group">
                 <span class="sidebar-label">🛡️ 資安與隱私</span>
@@ -644,22 +647,33 @@ function convertNumbersToThaiText(text) {
             });
         }
 
-  function speak(text, btnElement, e) {
+function speak(text, btnElement, e) {
     if(e) e.stopPropagation();
     window.speechSynthesis.cancel();
 
-    const processedText = convertNumbersToThaiText(text).trim();
+    // 1. 基本數字轉換
+    let processedText = convertNumbersToThaiText(text).trim();
+
+    // 2. 編碼標準化 (關鍵！)
+    // 使用 NFC 格式可以將拆散的母音符號重新組合成標準單一字元
+    processedText = processedText.normalize('NFC');
+
+    // 3. 針對 'am' 母音的特殊修正 (針對某些瀏覽器的 Bug)
+    // 有些引擎不認識組合符號，我們強制統一格式
+    processedText = processedText.replace(/\u0e3d/g, '\u0e32'); // 修正某些泰文編碼偏移
+
     const msg = new SpeechSynthesisUtterance(processedText);
     
-    // 獲取系統所有語音包
+    // 4. 強制使用 Siri 或高品質語音 (如果有的話)
     const voices = window.speechSynthesis.getVoices();
-    // 優先尋找名稱包含 "Premium"、"Enhanced" 或 "Google" 的泰語語音
-    const thaiVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Premium') || v.name.includes('Google'))) 
-                    || voices.find(v => v.lang.includes('th'));
+    const premiumVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Premium') || v.name.includes('Enhanced')));
+    if (premiumVoice) msg.voice = premiumVoice;
 
-    if (thaiVoice) msg.voice = thaiVoice;
     msg.lang = 'th-TH';
-    msg.rate = 0.9; // 稍微調慢一點點，有助於語音引擎正確切分單字
+    msg.rate = 0.85; // 稍微放慢一點，讓引擎有時間解析組合母音
+
+    if (btnElement) btnElement.classList.add('playing');
+    msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };
     
     window.speechSynthesis.speak(msg);
 }

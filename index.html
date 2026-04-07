@@ -671,7 +671,7 @@ function speak(text, btnElement, e) {
 
     if (bestVoice) msg.voice = bestVoice;
     msg.lang = 'th-TH';
-    msg.rate = 0.8; 
+    msg.rate = 1; 
 
     if (btnElement) btnElement.classList.add('playing');
     msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };

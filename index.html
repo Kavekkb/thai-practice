@@ -644,25 +644,25 @@ function convertNumbersToThaiText(text) {
             });
         }
 
-     // 修改後的單次播放函式
-     function speak(text, btnElement, e) {
+  function speak(text, btnElement, e) {
     if(e) e.stopPropagation();
     window.speechSynthesis.cancel();
-    
-    // 確保去除前後空格，這能減少 TTS 誤判為拼字模式的機率
-    const processedText = convertNumbersToThaiText(text).trim();
-    
-    const msg = new SpeechSynthesisUtterance(processedText);
-    msg.lang = 'th-TH';
-    msg.rate = currentSpeed;
-    // 稍微調整音調，有助於某些系統更自然地發出聲調
-    msg.pitch = 1.0; 
 
-    if (btnElement) btnElement.classList.add('playing');
-    msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };
+    const processedText = convertNumbersToThaiText(text).trim();
+    const msg = new SpeechSynthesisUtterance(processedText);
+    
+    // 獲取系統所有語音包
+    const voices = window.speechSynthesis.getVoices();
+    // 優先尋找名稱包含 "Premium"、"Enhanced" 或 "Google" 的泰語語音
+    const thaiVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Premium') || v.name.includes('Google'))) 
+                    || voices.find(v => v.lang.includes('th'));
+
+    if (thaiVoice) msg.voice = thaiVoice;
+    msg.lang = 'th-TH';
+    msg.rate = 0.9; // 稍微調慢一點點，有助於語音引擎正確切分單字
+    
     window.speechSynthesis.speak(msg);
 }
-
         initAllData();
         
         window.onscroll = function() {

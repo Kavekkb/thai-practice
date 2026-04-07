@@ -651,27 +651,28 @@ function speak(text, btnElement, e) {
     if(e) e.stopPropagation();
     window.speechSynthesis.cancel();
 
-    // 1. 基本數字轉換
+    // 1. 數字轉換
     let processedText = convertNumbersToThaiText(text).trim();
 
-    // 2. 核心修正：解決 'am' (ํา) 被拆開唸的問題
-    // 將 ํา (Sara Am) 替換為 ัม (短母音 a + 尾音 m)，發音完全相同但更穩定
-    processedText = processedText.replace(/ำ/g, 'ัม'); 
+    // 2. 終極修正：處理所有可能的 'Am' (Sara Am) 編碼
+    // 這裡使用了 Unicode 範圍匹配，確保不管是哪種 ำ 都會被抓到
+    // 我們將其替換成 'อัม' 的發音邏輯（短母音 a + 尾音 m）
+    processedText = processedText.replace(/[\u0e33\u0eb3]/g, 'ัม'); 
     
-    // 3. 額外修正：解決 'เ-า' (Ao) 有時也會被拆開的問題 (選用)
-    // processedText = processedText.replace(/เอา/g, 'เ-า'); 
+    // 3. 額外補強：處理重複符號 'ๆ' (有些引擎看到它會發呆)
+    // 將 'ๆ' 替換成前面的最後一個字，強制讓引擎讀兩遍
+    processedText = processedText.replace(/(.)ๆ/g, '$1$1');
 
     const msg = new SpeechSynthesisUtterance(processedText);
     
-    // 4. 強制語音設定
+    // 4. 強制尋找最優語音包
     const voices = window.speechSynthesis.getVoices();
-    // 優先選 Siri 或 Premium
     const bestVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Enhanced') || v.name.includes('Google')))
                     || voices.find(v => v.lang.includes('th'));
 
     if (bestVoice) msg.voice = bestVoice;
     msg.lang = 'th-TH';
-    msg.rate = 0.85; // 稍慢的速度有助於正確發音
+    msg.rate = 0.8; // 再放慢一點點，確保音節清晰
 
     if (btnElement) btnElement.classList.add('playing');
     msg.onend = () => { if (btnElement) btnElement.classList.remove('playing'); };

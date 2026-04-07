@@ -444,15 +444,21 @@ async function initExternalLinks() {
 
 function convertNumbersToThaiText(text) {
     if (!text) return "";
+
+    // 檢查字串中是否包含任何 阿拉伯數字 (0-9) 或 泰文數字 (๐-๙)
+    // 如果完全沒有數字，直接回傳原始文字，不做任何處理，確保泰文編碼完整
+    if (!/[0-9๐-๙]/.test(text)) {
+        return text;
+    }
+
     const thaiNumbers = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
     const units = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
 
-    // 1. 先處理泰文數字轉阿拉伯數字
+    // 先處理泰文數字轉阿拉伯數字
     let processed = text.replace(/[๐-๙]/g, d => "๐๑๒๓๔๕๖๗๘๙".indexOf(d));
 
-    // 2. 使用更精確的匹配，確保數字前後的泰文不被干擾
-    return processed.replace(/\b\d+\b/g, (match) => { 
-        // 如果你的泰文跟數字連在一起（如 50บาท），就把 \b 拿掉改成 /\d+/g
+    // 執行數字轉泰文文字
+    return processed.replace(/\d+/g, (match) => {
         let n = parseInt(match);
         if (n === 0) return thaiNumbers[0];
         
@@ -465,12 +471,19 @@ function convertNumbersToThaiText(text) {
             let position = (len - i - 1) % 6;
             
             if (digit !== 0) {
-                if (position === 0 && digit === 1 && len > 1) str += 'เอ็ด';
-                else if (position === 1 && digit === 2) str += 'ยี่สิบ';
-                else if (position === 1 && digit === 1) str += 'สิบ';
-                else str += thaiNumbers[digit] + units[position];
+                if (position === 0 && digit === 1 && len > 1) {
+                    str += 'เอ็ด';
+                } else if (position === 1 && digit === 2) {
+                    str += 'ยี่สิบ';
+                } else if (position === 1 && digit === 1) {
+                    str += 'สิบ';
+                } else {
+                    str += thaiNumbers[digit] + units[position];
+                }
             }
-            if (i < len - 1 && (len - i - 1) % 6 === 0) str += 'ล้าน';
+            if (i < len - 1 && (len - i - 1) % 6 === 0) {
+                str += 'ล้าน';
+            }
         }
         return str;
     });

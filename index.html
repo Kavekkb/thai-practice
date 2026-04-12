@@ -664,6 +664,11 @@ function speak(text, btnElement, e) {
     // 處理重複符號：加入「逗號」產生微停頓，解決卡頓感
     // 我們稍微放寬抓取長度到 1-6 字元，確保涵蓋大部分單字
     processedText = processedText.replace(/([ก-๙]{1,6})ๆ/g, '$1 $1');
+    
+    // 4. 💡 針對「平音長句」的優化：在主語和謂語間增加一點點「隱形停頓」
+    // 如果這句話是 "คุณเจ็บตา..."，我們讓引擎稍微在 "คุณ" (你) 之後換氣
+    // 這裡我們針對常見的人稱代詞後面加一個極小的空格
+    processedText = processedText.replace(/^(คุณ|ผม|ฉัน|เรา)/g, '$1 ');
 
     const msg = new SpeechSynthesisUtterance(processedText);
     

@@ -41,6 +41,13 @@
             --search-border: #bdc3c7;
             --nav-bg: #ecf0f1;
         }
+
+<div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+    <h2 style="margin-bottom: 20px; font-family: sans-serif;">泰語練習系統</h2>
+    <input type="password" id="passcode" placeholder="輸入登入密碼" style="padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; width: 200px; text-align: center;">
+    <button onclick="checkPasscode()" style="margin-top: 15px; padding: 10px 30px; background: #007AFF; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">進入</button>
+    <p id="error-msg" style="color: red; margin-top: 10px; display: none;">通行碼錯誤，請重新輸入</p>
+</div>
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
@@ -347,6 +354,38 @@
         let quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
         let currentDisplayedList = [];
 
+function checkPasscode() {
+    const input = document.getElementById('passcode').value;
+    const correctPasscode = '58345834aaAA';
+    const overlay = document.getElementById('login-overlay');
+    const errorMsg = document.getElementById('error-msg');
+
+    if (input === correctPasscode) {
+        // 密碼正確：隱藏登入畫面
+        overlay.style.display = 'none';
+        // 紀錄登入狀態
+        localStorage.setItem('thai_auth', 'true');
+        localStorage.setItem('auth_time', new Date().getTime());
+    } else {
+        // 密碼錯誤
+        errorMsg.style.display = 'block';
+        document.getElementById('passcode').value = '';
+    }
+}
+
+// 頁面載入時檢查是否已經登入過
+window.addEventListener('load', () => {
+    const isAuth = localStorage.getItem('thai_auth');
+    const authTime = localStorage.getItem('auth_time');
+    const now = new Date().getTime();
+    
+    // 如果 24 小時內登入過，就直接隱藏遮罩 (24小時 = 86400000 毫秒)
+    if (isAuth === 'true' && (now - authTime < 86400000)) {
+        document.getElementById('login-overlay').style.display = 'none';
+    }
+});
+
+        
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');

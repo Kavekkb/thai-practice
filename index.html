@@ -656,26 +656,23 @@ function speak(text, btnElement, e) {
     if(e) e.stopPropagation();
     window.speechSynthesis.cancel();
 
-    // 1. 標準化 (非常重要，把所有編碼順序統一)
+    // 1. 標準化
     let processedText = text.normalize('NFC').trim();
     processedText = convertNumbersToThaiText(processedText);
 
-    // 2. 【全域修正】處理所有帶聲調與不帶聲調的 Am 音
-    // 注意後面的 /gu 旗標：g 代表全域取代，u 代表支援 Unicode 碼點
-    processedText = processedText.replace(/([่้๊๋])?ำ/gu, (match, tone) => {
-        return (tone ? tone : "") + "ัม";
-    });
-    
-    // 同時處理可能被拆散的小圓圈組合
-    processedText = processedText.replace(/([่้๊๋])?\u0e4d\u0e32/gu, (match, tone) => {
-        return (tone ? tone : "") + "ัม";
+    // 2. 終極編碼修復邏輯
+    processedText = processedText.replace(/([่้๊๋]?ำ|ำ[่้๊๋]?|([่้๊๋]?)\u0e4d\u0e32|\u0e4d\u0e32([่้๊๋]?))/gu, (match) => {
+        const toneMatch = match.match(/[่้๊๋]/);
+        const tone = toneMatch ? toneMatch[0] : "";
+        return tone + "ัม";
     });
 
-    // 3. 處理重複符號 ๆ
+    // 3. 處理重複符號
     processedText = processedText.replace(/([ก-๙]{1,6})ๆ/gu, '$1, $1');
     
-    // 4. 斷句優化：在主詞或長詞後加微小停頓
-    processedText = processedText.replace(/^(คุณ|ผม|ฉัน|เรา|กาแฟ)/gu, '$1 ');
+    // 4. 顯示處理後的結果 (偵錯用)
+    console.log("Original:", text);
+    console.log("Final Text to Speech:", processedText);
 
     const msg = new SpeechSynthesisUtterance(processedText);
     

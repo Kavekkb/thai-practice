@@ -360,18 +360,22 @@
 
 function checkPasscode() {
     const input = document.getElementById('passcode').value;
-    const correctPasscode = '58345834aaAA';
-    const overlay = document.getElementById('login-overlay');
-    const errorMsg = document.getElementById('error-msg');
+    
+  
+    const encodedPass = 'NTgzNDU4MzRhYUFB'; 
 
-    if (input === correctPasscode) {
+
+    if (btoa(input) === encodedPass) {
         // 密碼正確：隱藏登入畫面
+        const overlay = document.getElementById('login-overlay');
         overlay.style.display = 'none';
-        // 紀錄登入狀態
+        
+        // 紀錄登入狀態 (24小時內免登入)
         localStorage.setItem('thai_auth', 'true');
         localStorage.setItem('auth_time', new Date().getTime());
     } else {
         // 密碼錯誤
+        const errorMsg = document.getElementById('error-msg');
         errorMsg.style.display = 'block';
         document.getElementById('passcode').value = '';
     }

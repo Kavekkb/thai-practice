@@ -92,15 +92,31 @@
         .action-row {
             display: flex; align-items: center; width: 100%; gap: 8px;
         }
-        .left-actions {
-            display: flex; gap: 6px; flex-grow: 1; 
-        }
+      /* 確保按鈕容器不換行，並平分空間或緊湊排列 */
+.left-actions {
+    display: flex;
+    gap: 4px; /* 縮小按鈕之間的間距 */
+    flex-grow: 1;
+    overflow-x: auto; /* 若螢幕太窄，允許橫向滑動而不換行 */
+    white-space: nowrap; 
+}
 
-        .quiz-toggle, .refresh-btn {
-            background: var(--btn-inactive); color: var(--text-color); border: 1px solid var(--search-border);
-            border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.85rem; font-weight: bold;
-            width: auto; white-space: nowrap; display: flex; align-items: center; gap: 4px;
-        }
+     /* 調整按鈕內的文字與邊距，確保三顆按鈕擠得下 */
+.quiz-toggle, .refresh-btn {
+    background: var(--btn-inactive);
+    color: var(--text-color);
+    border: 1px solid var(--search-border);
+    border-radius: 8px;
+    padding: 8px 6px; /* 減少左右內距 */
+    cursor: pointer;
+    font-size: 0.75rem; /* 稍微縮小字體 */
+    font-weight: bold;
+    flex: 1; /* 讓三顆按鈕等寬 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
         .quiz-toggle.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
         
         .card { 
@@ -211,16 +227,19 @@
         <div class="search-container">
             <input type="text" id="search-input" maxlength="50" autocomplete="off" placeholder="輸入泰文或中文搜尋....." oninput="handleSearch()">
         </div>
-       <div class="left-actions">
-    <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
-    <button id="autoplay-btn" class="quiz-toggle" onclick="toggleAutoplay()">📢 輪播模式</button>
-    <button id="art-font-btn" class="quiz-toggle" onclick="toggleArtFont()">🎨 藝術字體</button>
-</div>
-            <div id="refresh-btn-main" class="refresh-btn" onclick="handleRefresh()">
-                <span>🔄 更新</span>
-            </div>
-        </div>
+<div class="action-row">
+    <div class="left-actions">
+        <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
+        <button id="autoplay-btn" class="quiz-toggle" onclick="toggleAutoplay()">📢 輪播模式</button>
+        <button id="art-font-btn" class="quiz-toggle" onclick="toggleArtFont()">🎨 藝術字體</button>
     </div>
+    <div id="refresh-btn-main" class="refresh-btn" style="flex: 0 0 auto; width: auto; padding: 8px 12px;" onclick="handleRefresh()">
+        <span>🔄 更新</span>
+    </div>
+</div>
+         
+       
+    
 
     <div id="loading">同步雲端資料中...</div>
     <div id="app"></div>

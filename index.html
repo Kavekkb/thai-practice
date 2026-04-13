@@ -709,7 +709,7 @@ function convertNumbersToThaiText(text) {
             isQuizMode = !isQuizMode;
             const btn = document.getElementById('quiz-btn');
             btn.classList.toggle('active');
-            btn.innerText = isQuizMode ? '🙈 測驗模式：ON' : '👁️ 測驗模式';
+            btn.innerText = isQuizMode ? '🙈 測驗：ON' : '👁️ 測驗';
             handleRefresh();
         }
 
@@ -720,7 +720,7 @@ function convertNumbersToThaiText(text) {
                 isAutoplay = true;
                 const btn = document.getElementById('autoplay-btn');
                 btn.classList.add('active');
-                btn.innerText = '⏹️ 停止輪播';
+                btn.innerText = '⏹️ 停止';
                 startAutoplayLogic();
             }
         }
@@ -730,7 +730,7 @@ function convertNumbersToThaiText(text) {
             window.speechSynthesis.cancel();
             const btn = document.getElementById('autoplay-btn');
             btn.classList.remove('active');
-            btn.innerText = '📢 輪播模式';
+            btn.innerText = '📢 輪播';
             document.querySelectorAll('.card').forEach(c => c.style.borderColor = 'rgba(0,0,0,0.05)');
         }
 

@@ -12,7 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>泰難了舌頭已打結</title>
-    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -44,12 +44,12 @@
         }
 
 
-        /* 當 card 啟動 art-font 類別時，更換字體並稍微調整大小 */
+/* 當啟動藝術字體模式時，套用 Noto Sans Thai */
 .card.art-font .thai {
-    font-family: 'Itim', cursive !important;
-    letter-spacing: 0px; /* 藝術字體通常較緊湊 */
+    font-family: 'Noto Sans Thai', sans-serif !important;
+    font-weight: 700; /* Noto Sans Thai 的粗體效果很好看 */
+    letter-spacing: 0px;
 }
-
 /* 按鈕啟動時的顏色（跟測驗模式一樣用橘色） */
 .quiz-toggle.art-active {
     background: var(--accent-color);

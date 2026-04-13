@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>泰難了舌頭已打結</title>
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -43,6 +44,18 @@
         }
 
 
+        /* 當 card 啟動 art-font 類別時，更換字體並稍微調整大小 */
+.card.art-font .thai {
+    font-family: 'Itim', cursive !important;
+    letter-spacing: 0px; /* 藝術字體通常較緊湊 */
+}
+
+/* 按鈕啟動時的顏色（跟測驗模式一樣用橘色） */
+.quiz-toggle.art-active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
         
         body { 
     
@@ -198,11 +211,11 @@
         <div class="search-container">
             <input type="text" id="search-input" maxlength="50" autocomplete="off" placeholder="輸入泰文或中文搜尋....." oninput="handleSearch()">
         </div>
-        <div class="action-row">
-            <div class="left-actions">
-                <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
-                <button id="autoplay-btn" class="quiz-toggle" onclick="toggleAutoplay()">📢 輪播模式</button>
-            </div>
+       <div class="left-actions">
+    <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 測驗模式</button>
+    <button id="autoplay-btn" class="quiz-toggle" onclick="toggleAutoplay()">📢 輪播模式</button>
+    <button id="art-font-btn" class="quiz-toggle" onclick="toggleArtFont()">🎨 藝術字體</button>
+</div>
             <div id="refresh-btn-main" class="refresh-btn" onclick="handleRefresh()">
                 <span>🔄 更新</span>
             </div>
@@ -347,7 +360,24 @@ window.addEventListener('load', () => {
         document.getElementById('login-overlay').style.display = 'none';
     }
 });
+let isArtFont = false;
 
+function toggleArtFont() {
+    isArtFont = !isArtFont;
+    const btn = document.getElementById('art-font-btn');
+    
+    // 1. 切換按鈕顏色
+    btn.classList.toggle('art-active');
+    
+    // 2. 針對目前畫面上所有的卡片切換字體
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.classList.toggle('art-font');
+    });
+    
+    // 3. 提示目前狀態
+    document.getElementById('search-info').innerText = isArtFont ? '已切換為藝術字體' : '已恢復標準字體';
+}
         
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -565,10 +595,16 @@ function convertNumbersToThaiText(text) {
             const container = document.getElementById('app');
             container.innerHTML = list.length === 0 ? '<div style="margin-top:30px;color:#666;text-align:center;">無相關詞庫</div>' : '';
             container.className = isQuizMode ? 'quiz-mode' : '';
+
+
+            
             list.forEach((item, index) => {
                 const isFav = favorites.includes(item.id);
                 const div = document.createElement('div');
-                div.className = 'card';
+                // --- 關鍵修改：生成時判斷是否要加 art-font ---
+        div.className = 'card' + (isArtFont ? ' art-font' : '');
+        // ------------------------------------------
+              
                 div.id = `card-${index}`;
                 div.onclick = function(e) { if (isQuizMode && !e.target.closest('button')) this.classList.toggle('revealed'); };
                 div.innerHTML = `

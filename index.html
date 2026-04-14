@@ -299,9 +299,11 @@
     </div>
 
  <div id="about-page" class="modal-page">
-    <div class="modal-content">
-        </div>
+    <div class="modal-content"></div>
 </div>
+        <div id="rule-page" class="modal-page">
+        <div class="modal-content"></div>
+    </div>
 
     <div id="settings-page" class="modal-page">
         <div class="modal-content">
@@ -930,6 +932,64 @@ window.onscroll = function() {
 
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+        const RULE_GID = '1909951115'; // 妳指定的分頁 GID
+
+async function openRulePage() {
+    // 1. 取得顯示容器
+    const modal = document.getElementById('rule-page');
+    const container = modal.querySelector('.modal-content');
+    
+    // 2. 顯示讀取中狀態
+    container.innerHTML = '<div style="text-align:center; padding:20px;">📖 正在翻閱泰文秘笈...</div>';
+    modal.style.display = 'flex'; // 顯示彈窗
+
+    try {
+        // 3. 抓取 Google 試算表資料
+        const url = `${base_url}&gid=${RULE_GID}`;
+        const response = await fetch(url);
+        const csvText = await response.text();
+        
+        // 4. 解析 CSV (跳過第一行標題)
+        const rows = csvText.split('\n').slice(1); 
+        let html = `<h2 style="text-align:center; color:var(--accent-color); margin-bottom:20px;">⚡ 泰文規則惡補</h2>`;
+        
+        let hasData = false;
+        rows.forEach(row => {
+            // 使用正規表達式處理 CSV，避免內容裡的逗號導致切割錯誤
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            if (cols.length >= 2) {
+                const title = cols[0].replace(/"/g, '').trim();
+                const content = cols[1].replace(/"/g, '').trim();
+                if (title && content) {
+                    hasData = true;
+                    html += `
+                        <div style="background:#333; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid #444; text-align:left;">
+                            <div style="font-weight:bold; color:var(--accent-color); font-size:1.1rem; margin-bottom:8px;">■ ${title}</div>
+                            <div style="font-size:0.95rem; line-height:1.6; white-space: pre-wrap; color:#ddd;">${content}</div>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        if (!hasData) html += '<p style="text-align:center;">目前秘笈裡還沒有內容喔！</p>';
+
+        // 5. 加入關閉按鈕
+        html += `<button class="close-btn" onclick="closeModal('rule-page')" style="margin-top:10px; width:100%; padding:12px; border-radius:8px; background:var(--btn-inactive); color:white; border:none; cursor:pointer; font-weight:bold;">看完收工</button>`;
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error fetching rules:', error);
+        container.innerHTML = `
+            <div style="color:var(--danger-color); text-align:center; padding:20px;">
+                抓不到秘笈，請檢查：<br>
+                1. 網路連線<br>
+                2. 試算表分頁 ${RULE_GID} 是否已發佈<br>
+                <button onclick="closeModal('rule-page')" style="margin-top:15px;">關閉</button>
+            </div>`;
+    }
 }
 </script>
 

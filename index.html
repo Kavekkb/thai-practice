@@ -809,10 +809,24 @@ function speak(text, btnElement, e) {
     processedText = processedText.replace(/น\u0e49[\u0e33\u0e4d]\u0e32?/g, "นั้ม");
 
     // 3. 針對所有帶聲調的 Am 音 (ำ) 進行通用修復
-    // 捕捉：[子音] + [聲調] + [Am] 或 [子音] + [Am] + [聲調]
+    // 捕捉：[子音] + [聲調] + [Am] 或 [子音] + [Am] + [聲調]function speak(text, btnElement, e) {
+    if(e) e.stopPropagation();
+    window.speechSynthesis.cancel();
+
+    // 1. 標準化處理
+    let processedText = text.normalize('NFC').trim();
+    processedText = convertNumbersToThaiText(processedText);
+
+    // 2. 【核心修復】針對「Am 模式」的所有編碼組合進行攔截
+    // 這裡處理：子音 + (聲調/圓圈/母音A) 的所有亂序組合
+    // 捕捉 น + (ํ 或 า 或 ้) 的各種排列，全部強制轉為發音穩定的「นั้ม」
+    processedText = processedText.replace(/น[\u0e33\u0e4d\u0e32\u0e49]{2,3}/g, "นั้ม");
+
+    // 3. 通用 Am 音 (ำ) 的深度修復
+    // 解決所有子音加上 Am 且帶聲調會拆開唸的問題
+    // 原理：將 ำ 拆解為 ั + ม 讓 TTS 引擎以「閉口音」邏輯發音
     processedText = processedText.replace(/([ก-๙])([\u0e48-\u0e4b])?([\u0e33\u0e4d])(\u0e32?)/g, (match, con, tone, am, a) => {
         let finalTone = tone ? tone : "";
-        // 將「子音+聲調+Am」轉換為「子音+短母音a+聲調+尾音m」的邏輯發音
         return con + "ั" + finalTone + "ม";
     });
 
@@ -821,7 +835,7 @@ function speak(text, btnElement, e) {
 
     const msg = new SpeechSynthesisUtterance(processedText);
     
-    // 5. 語音包優先順序
+    // 5. 語音包設定
     const voices = window.speechSynthesis.getVoices();
     const bestVoice = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Enhanced')))
                     || voices.find(v => v.lang.includes('th'));

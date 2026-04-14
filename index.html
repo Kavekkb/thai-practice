@@ -876,21 +876,7 @@ function speak(text, btnElement, e) {
     window.speechSynthesis.speak(msg);
 }
 
-// 登入驗證函式
-function checkPasscode() {
-    const input = document.getElementById('passcode').value;
-    const encodedPass = 'NTgzNDU4MzRhYUFB'; // 妳的 Base64 密碼
 
-    if (btoa(input) === encodedPass) {
-        document.getElementById('login-overlay').style.display = 'none';
-        localStorage.setItem('thai_auth', 'true');
-        localStorage.setItem('auth_time', new Date().getTime());
-    } else {
-        const errorMsg = document.getElementById('error-msg');
-        errorMsg.style.display = 'block';
-        document.getElementById('passcode').value = '';
-    }
-}
 
 // 頁面載入時的總初始化
 window.addEventListener('load', () => {
@@ -917,6 +903,30 @@ window.onscroll = function() {
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+        function checkPasscode() {
+    const input = document.getElementById('passcode').value;
+    const authorizedPass = [
+        'NTgzNDU4MzRhYUFB', // 原始密碼
+        'VGVzdDU1NjZAQA=='   // Test5566@@
+    ];
+
+    if (authorizedPass.includes(btoa(input))) {
+        document.getElementById('login-overlay').style.display = 'none';
+        localStorage.setItem('thai_auth', 'true');
+        localStorage.setItem('auth_time', new Date().getTime());
+    } else {
+        const errorMsg = document.getElementById('error-msg');
+        errorMsg.style.display = 'block';
+        document.getElementById('passcode').value = '';
+    }
+}
+        // 讓密碼輸入框支援按 Enter 鍵登入
+document.getElementById('passcode').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        checkPasscode();
+    }
+});
         const RULE_GID = '1909951115'; // 妳指定的分頁 GID
 
 async function openRulePage() {

@@ -373,23 +373,7 @@
         let quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
         let currentDisplayedList = [];
 
-function checkPasscode() {
-    const input = document.getElementById('passcode').value;
-    const authorizedPass = [
-        'NTgzNDU4MzRhYUFB', // 原始密碼
-        'VGVzdDU1NjZAQA=='   // Test5566@@
-    ];
 
-    if (authorizedPass.includes(btoa(input))) {
-        document.getElementById('login-overlay').style.display = 'none';
-        localStorage.setItem('thai_auth', 'true');
-        localStorage.setItem('auth_time', new Date().getTime());
-    } else {
-        const errorMsg = document.getElementById('error-msg');
-        errorMsg.style.display = 'block';
-        document.getElementById('passcode').value = '';
-    }
-}
 
         
 let isArtFont = false;
@@ -904,13 +888,15 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-        function checkPasscode() {
+  function checkPasscode() {
     const input = document.getElementById('passcode').value;
+    // 這裡放入妳的所有密碼編碼
     const authorizedPass = [
         'NTgzNDU4MzRhYUFB', // 原始密碼
         'VGVzdDU1NjZAQA=='   // Test5566@@
     ];
 
+    // 檢查輸入的 Base64 是否在陣列中
     if (authorizedPass.includes(btoa(input))) {
         document.getElementById('login-overlay').style.display = 'none';
         localStorage.setItem('thai_auth', 'true');
@@ -921,6 +907,13 @@ function scrollToTop() {
         document.getElementById('passcode').value = '';
     }
 }
+
+// 補上這段，讓 Enter 鍵生效
+document.getElementById('passcode').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        checkPasscode();
+    }
+});
         // 讓密碼輸入框支援按 Enter 鍵登入
 document.getElementById('passcode').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {

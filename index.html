@@ -237,9 +237,11 @@
             </div>
             <div id="search-info"></div>
         </div>
-        <div class="search-container">
-            <input type="text" id="search-input" maxlength="50" autocomplete="off" placeholder="輸入泰文或中文搜尋....." oninput="handleSearch()">
-        </div>
+        <div id="main-content"> <div class="search-container">
+        <input type="text" id="searchInput" placeholder="搜尋泰文或中文..." oninput="filterWords()">
+    </div>
+    <div id="wordList" class="word-grid"></div> 
+</div>
 <div class="action-row">
     <div class="left-actions">
         <button id="quiz-btn" class="quiz-toggle" onclick="toggleQuizMode()">👁️ 遮蔽</button>
@@ -1058,23 +1060,29 @@ function scrollToTop() {
 // 1. 在主畫面顯示「子音 / 母音」大按鈕
 function showAlphabetMenuInMain() {
     const mainContent = document.getElementById('main-content');
-    
-    // 如果有側邊欄收合函式請執行
-    if (window.innerWidth < 768 && typeof toggleSidebar === "function") {
-        toggleSidebar(); 
+    const sidebar = document.getElementById('sidebar');
+
+    // 1. 自動收起側邊欄 (根據妳檔案裡的邏輯)
+    if (sidebar && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
     }
 
+    // 2. 檢查有沒有找到我們剛剛加的 main-content
+    if (!mainContent) {
+        alert("找不到顯示區域！請確認妳有在 HTML 加上 <div id='main-content'>");
+        return;
+    }
+
+    // 3. 渲染選單
     mainContent.innerHTML = `
         <div style="padding: 20px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.5s;">
             <h2 style="text-align:center; color:var(--accent-color); margin-bottom:30px; font-size:1.6rem;">🇹🇭 請選擇類別</h2>
-            
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                <button onclick="renderAlphabetListInMain('consonant')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border-radius: 15px; background: var(--card-bg); color: var(--accent-color); border: 2px solid var(--accent-color); cursor: pointer; width: 100%; transition: 0.3s;">
+                <button onclick="renderAlphabetListInMain('consonant')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border-radius: 15px; background: var(--card-bg); color: var(--accent-color); border: 2px solid var(--accent-color); cursor: pointer; width: 100%;">
                     <span style="font-size: 1.8rem; font-weight: bold;">子音</span>
                     <span style="font-size: 1rem; color: var(--sub-text); margin-top: 8px;">Consonants (44)</span>
                 </button>
-                
-                <button onclick="renderAlphabetListInMain('vowel')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border-radius: 15px; background: var(--card-bg); color: var(--accent-color); border: 2px solid var(--accent-color); cursor: pointer; width: 100%; transition: 0.3s;">
+                <button onclick="renderAlphabetListInMain('vowel')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border-radius: 15px; background: var(--card-bg); color: var(--accent-color); border: 2px solid var(--accent-color); cursor: pointer; width: 100%;">
                     <span style="font-size: 1.8rem; font-weight: bold;">母音</span>
                     <span style="font-size: 1rem; color: var(--sub-text); margin-top: 8px;">Vowels (28)</span>
                 </button>

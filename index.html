@@ -278,6 +278,7 @@
         </div>
     <div class="sidebar-section">
     <span class="sidebar-label">額外補充</span>
+    <button id="btn-alphabet" class="side-full-btn" onclick="openAlphabetPage()">🇹🇭 子音母音</button>
     <button id="btn-rules" class="side-full-btn" onclick="openRulePage()">📖 惡補一下</button>
     <button id="btn-essays" class="side-full-btn" onclick="openEssayListPage()">📝 閱讀短文</button>
 </div>
@@ -303,6 +304,17 @@
     <div class="modal-content" style="max-width: 800px;">
         <div id="essay-dynamic-content">
             </div>
+    </div>
+</div>
+
+<div id="alphabet-page" class="modal-page">
+    <div class="modal-content" style="max-width: 900px;">
+        <h2 style="text-align:center; color:var(--accent-color); margin-bottom:20px;">🇹🇭 泰文 44 子音表</h2>
+        
+        <div id="alphabetGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+            </div>
+
+        <button class="close-btn" onclick="closeModal('alphabet-page')" style="margin-top:25px; width:100%; padding:15px; border-radius:8px; background:var(--btn-inactive); color:white; border:none; cursor:pointer;">關閉</button>
     </div>
 </div>
 
@@ -1039,6 +1051,47 @@ window.onscroll = function() {
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// 泰文字母資料 (從妳提供的 HTML 提取)
+const alphabetData = [
+    { char: 'ก', roman: 'k (gaw gai)' }, { char: 'ข', roman: 'kh (khaw khai)' },
+    { char: 'ค', roman: 'kh (khaw khwai)' }, { char: 'ง', roman: 'ng (ngaw nguu)' },
+    { char: 'จ', roman: 'j (jaw jaan)' }, { char: 'ฉ', roman: 'ch (chaw ching)' },
+    { char: 'ช', roman: 'ch (chaw chaang)' }, { char: 'ซ', roman: 's (saw soh)' },
+    { char: 'ฌ', roman: 'ch (chaw chəə)' }, { char: 'ญ', roman: 'y (yaw ying)' },
+    { char: 'ฎ', roman: 'd (daw chadaa)' }, { char: 'ฏ', roman: 't (taw padak)' },
+    { char: 'ฐ', roman: 'th (thaw thaan)' }, { char: 'ฑ', roman: 'th (thaw thong)' },
+    { char: 'ฒ', roman: 'th (thaw phuuthao)' }, { char: 'ณ', roman: 'n (naw neen)' },
+    { char: 'ด', roman: 'd (daw dek)' }, { char: 'ต', roman: 't (taw tao)' },
+    { char: 'ถ', roman: 'th (thaw thung)' }, { char: 'ท', roman: 'th (thaw thahaan)' },
+    { char: 'ธ', roman: 'th (thaw thong)' }, { char: 'น', roman: 'n (naw nuu)' },
+    { char: 'บ', roman: 'b (baw baimai)' }, { char: 'ป', roman: 'p (paw plaa)' },
+    { char: 'ผ', roman: 'ph (phaw phưng)' }, { char: 'ฝ', roman: 'f (faw faa)' },
+    { char: 'พ', roman: 'ph (phaw phaan)' }, { char: 'ฟ', roman: 'f (faw fan)' },
+    { char: 'ภ', roman: 'ph (phaw samphao)' }, { char: 'ม', roman: 'm (maw maa)' },
+    { char: 'ย', roman: 'y (yaw yak)' }, { char: 'ร', roman: 'r (raw rưa)' },
+    { char: 'ล', roman: 'l (law ling)' }, { char: 'ว', roman: 'w (waw wɛɛn)' },
+    { char: 'ศ', roman: 's (saw salaa)' }, { char: 'ษ', roman: 's (saw rưsi)' },
+    { char: 'ส', roman: 's (saw sưa)' }, { char: 'ห', roman: 'h (haw hìip)' },
+    { char: 'ฬ', roman: 'l (law julaa)' }, { char: 'อ', roman: 'aw aang' },
+    { char: 'ฮ', roman: 'h (haw nokhûuk)' }
+];
+
+function openAlphabetPage() {
+    const modal = document.getElementById('alphabet-page');
+    const grid = document.getElementById('alphabetGrid');
+    
+    // 生成字母卡片
+    grid.innerHTML = alphabetData.map(letter => `
+        <div onclick="speak('${letter.char}', this)" style="background:var(--card-bg); padding:20px; border-radius:15px; text-align:center; cursor:pointer; border:1px solid var(--search-border); transition:0.3s;">
+            <div style="font-family:'Noto Sans Thai', sans-serif; font-size:2.5rem; color:var(--accent-color); font-weight:600; margin-bottom:5px;">${letter.char}</div>
+            <div style="font-size:0.9rem; color:var(--sub-text);">${letter.roman}</div>
+        </div>
+    `).join('');
+
+    modal.style.display = 'flex';
+}
+
 </script>
 
     <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:99; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);">↑</button>

@@ -203,7 +203,9 @@
             font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.2s ease;
-            min-width: 100px;
+            min-width: 80px;
+            flex: 1;
+            max-width: 120px;
         }
         .filter-btn:hover {
             background: var(--nav-bg);
@@ -213,6 +215,42 @@
             background: var(--text-color);
             color: var(--card-bg);
             border-color: var(--text-color);
+        }
+
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 10px;
+        }
+        .filter-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        .filter-container::-webkit-scrollbar-track {
+            background: var(--nav-bg);
+            border-radius: 2px;
+        }
+        .filter-container::-webkit-scrollbar-thumb {
+            background: var(--search-border);
+            border-radius: 2px;
+        }
+        .filter-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-color);
+        }
+
+        @media (max-width: 600px) {
+            .filter-btn {
+                min-width: 70px;
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            .filter-container {
+                gap: 6px;
+                padding: 0 5px;
+            }
         }
 
         .sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--bg-color); box-shadow: -5px 0 15px rgba(0,0,0,0.3); transition: 0.3s ease; z-index: 2000; padding: 25px; overflow-y: auto; box-sizing: border-box; }
@@ -825,7 +863,7 @@ function convertNumbersToThaiText(text) {
             // 如果是子音模式，添加篩選器
             if (currentMode === 'consonants') {
                 const filterHtml = `
-                    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="filter-container">
                         <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全部</button>
                         <button class="filter-btn ${currentConsonantFilter === '中' ? 'active' : ''}" onclick="displayConsonants('中')">🔸 中</button>
                         <button class="filter-btn ${currentConsonantFilter === '高' ? 'active' : ''}" onclick="displayConsonants('高')">🔺 高</button>

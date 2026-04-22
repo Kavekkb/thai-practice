@@ -1168,8 +1168,10 @@ function convertNumbersToThaiText(text) {
             return new Promise((resolve) => {
                 window.speechSynthesis.cancel();
                 
-                // 關鍵修改：先將數字轉換成泰文文字再播放
-                const processedText = convertNumbersToThaiText(text);
+                // 先將數字轉換成泰文文字
+                let processedText = convertNumbersToThaiText(text);
+                // 修正：ๆ 只重複前面的詞，不重複整個句子
+                processedText = processedText.replace(/([\u0e00-\u0e7f]+)ๆ/g, '$1 $1');
                 
                 const msg = new SpeechSynthesisUtterance(processedText);
                 msg.lang = 'th-TH';
@@ -1197,7 +1199,8 @@ function speak(text, btnElement, e) {
         let finalTone = tone ? tone : "";
         return con + "ั" + finalTone + "ม";
     });
-    processedText = processedText.replace(/([ก-๙]{1,6})ๆ/gu, '$1, $1');
+    // 修正：ๆ 只重複前面的詞，不重複整個句子
+    processedText = processedText.replace(/([\u0e00-\u0e7f]+)ๆ/g, '$1 $1');
 
     const msg = new SpeechSynthesisUtterance(processedText);
     const voices = window.speechSynthesis.getVoices();

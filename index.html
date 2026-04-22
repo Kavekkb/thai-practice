@@ -941,23 +941,87 @@ function convertNumbersToThaiText(text) {
             const gid = type === 'consonants' ? CONSONANTS_GID : VOWELS_GID;
             const targetArray = type === 'consonants' ? consonantsData : vowelsData;
             
+            // 母音使用手動定義的資料，避免編碼問題
+            if (type === 'vowels') {
+                vowelsData.length = 0;
+                vowelsData.push(
+                    { char: 'ะ', roman: 'a (短音)', category: '' },
+                    { char: 'า', roman: 'aa (長音)', category: '' },
+                    { char: 'ิ', roman: 'i (短音)', category: '' },
+                    { char: 'ี', roman: 'ii (長音)', category: '' },
+                    { char: 'ึ', roman: 'ue (短音)', category: '' },
+                    { char: 'ื', roman: 'uee (長音)', category: '' },
+                    { char: 'ุ', roman: 'u (短音)', category: '' },
+                    { char: 'ู', roman: 'uu (長音)', category: '' },
+                    { char: 'เ', roman: 'e (短音)', category: '' },
+                    { char: 'แ', roman: 'ae (短音)', category: '' },
+                    { char: 'โ', roman: 'o (長音)', category: '' },
+                    { char: 'ใ', roman: 'ai (長音)', category: '' },
+                    { char: 'ไ', roman: 'ai (長音)', category: '' },
+                    { char: 'ๅ', roman: 'o (短音)', category: '' },
+                    { char: 'ฤ', roman: 'rue (短音)', category: '' },
+                    { char: 'ฤๅ', roman: 'ruee (長音)', category: '' },
+                    { char: 'ฦ', roman: 'lue (短音)', category: '' },
+                    { char: 'ฦๅ', roman: 'luee (長音)', category: '' },
+                    { char: 'ำ', roman: 'am (長音)', category: '' },
+                    { char: 'ไอ', roman: 'ai (長音)', category: '' },
+                    { char: 'เอา', roman: 'ao (長音)', category: '' }
+                );
+                return;
+            }
+            
             try {
                 const response = await fetch(`${base_url}&gid=${gid}&t=${Date.now()}`);
-                const csvText = await response.text();
+                let csvText = await response.text();
+                
+                // 處理編碼問題：移除BOM並確保UTF-8
+                if (csvText.charCodeAt(0) === 0xFEFF) {
+                    csvText = csvText.slice(1); // 移除BOM
+                }
+                
+                // 如果仍有編碼問題，嘗試手動修復常見的編碼錯誤
+                if (csvText.includes('�') || csvText.match(/[åæ¯]/)) {
+                    console.warn('Detected encoding issues, attempting to fix');
+                    // 常見的Google Sheets編碼問題修復
+                    csvText = csvText
+                        .replace(/åæ¯/g, 'ะ')    // 短音a
+                        .replace(/æ¼/g, 'า')    // 長音aa
+                        .replace(/é·é/g, 'ิ')    // 短音i
+                        .replace(/ç-/g, ' (')
+                        .replace(/é·é-/g, ' (')
+                        .replace(/à¸°/g, 'ะ')
+                        .replace(/à¸²/g, 'า')
+                        .replace(/à¸µ/g, 'ิ')
+                        .replace(/à¹\x08/g, 'ไ')
+                        .replace(/à¹-/g, 'ไ')
+                        .replace(/à¹-à¸²/g, 'ao');
+                }
+                
+                console.log(`CSV text for ${type}:`, csvText);
                 const rows = csvText.split(/\r?\n/).slice(1); // 跳過標題行
+                console.log(`Rows for ${type}:`, rows);
                 
                 targetArray.length = 0; // 清空舊資料
                 rows.forEach(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (cols.length >= 3) {
+                    console.log(`Row: "${row}" -> cols:`, cols);
+                    if (cols.length >= 2) {
                         const char = cols[0].replace(/"/g, '').trim();
                         const roman = cols[1].replace(/"/g, '').trim();
-                        const category = cols[2].replace(/"/g, '').trim();
+                        let category = '';
+                        
+                        if (type === 'consonants' && cols.length >= 3) {
+                            // 子音有分類欄位
+                            category = cols[2].replace(/"/g, '').trim();
+                        }
+                        
                         if (char && roman) {
                             targetArray.push({ char, roman, category });
+                            console.log(`Added ${type} item:`, { char, roman, category });
                         }
                     }
                 });
+                console.log(`Final ${type} data:`, targetArray);
             } catch (error) {
                 console.error(`Error fetching ${type}:`, error);
                 // 如果抓取失敗，使用預設資料
@@ -1008,9 +1072,54 @@ function convertNumbersToThaiText(text) {
                     consonantsData.push(...defaultConsonants);
                 } else {
                     vowelsData.push(
-                        { char: 'ะ', roman: 'a (短音)' },
-                        { char: 'า', roman: 'aa (長音)' },
-                        { char: 'ิ', roman: 'i (短音)' }
+                        { char: 'ะ', roman: 'a (短音)', category: '' },
+                        { char: 'า', roman: 'aa (長音)', category: '' },
+                        { char: 'ิ', roman: 'i (短音)', category: '' }
+                    );
+                }
+            }
+        }
+
+        // 備用函數：使用Google Sheets JSON API處理編碼問題
+        async function fetchPhoneticDataJSON(type) {
+            const gid = type === 'consonants' ? CONSONANTS_GID : VOWELS_GID;
+            const targetArray = type === 'consonants' ? consonantsData : vowelsData;
+            
+            try {
+                // 使用Google Sheets的JSON feed API
+                const spreadsheetId = '1RuB_ZzZBKNqiEJW_7pXVNJFyjnORS8bBz24b65lJ4zMfAlrNsEDEyhi2VW-nzC5K8_2gNsbnH7ITFu';
+                const worksheetId = type === 'consonants' ? '0' : '164151544'; // 需要手動映射gid到worksheet id
+                
+                const jsonUrl = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${worksheetId}/public/values?alt=json`;
+                const response = await fetch(jsonUrl);
+                const data = await response.json();
+                
+                targetArray.length = 0;
+                data.feed.entry.forEach(entry => {
+                    const char = entry.gsx$char ? entry.gsx$char.$t : '';
+                    const roman = entry.gsx$roman ? entry.gsx$roman.$t : '';
+                    const category = type === 'consonants' && entry.gsx$category ? entry.gsx$category.$t : '';
+                    
+                    if (char && roman) {
+                        targetArray.push({ char, roman, category });
+                    }
+                });
+                
+                console.log(`JSON API loaded ${targetArray.length} ${type} items`);
+            } catch (error) {
+                console.error(`JSON API failed for ${type}:`, error);
+                // 如果JSON API也失敗，使用預設資料
+                if (type === 'consonants') {
+                    consonantsData.push(
+                        { char: 'ก', roman: 'k (kaw kai)', category: '中' },
+                        { char: 'ข', roman: 'kh (khaw khai)', category: '高' },
+                        { char: 'ค', roman: 'kh (khaw khuat)', category: '低' }
+                    );
+                } else {
+                    vowelsData.push(
+                        { char: 'ะ', roman: 'a (短音)', category: '' },
+                        { char: 'า', roman: 'aa (長音)', category: '' },
+                        { char: 'ิ', roman: 'i (短音)', category: '' }
                     );
                 }
             }

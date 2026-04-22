@@ -448,10 +448,6 @@
         let virtualScrollHeight = 0;
         let cardHeight = 144; // 預估卡片高度
         let visibleCards = 10; // 可見卡片數量
-        let isDataLoaded = false; // 標記數據是否已載入
-        let dataCache = new Map(); // 數據快取
-        let renderCache = new WeakMap(); // DOM渲染快取
-        let searchDebounceTimer; // 搜尋防抖計時器
 
 function checkPasscode() {
     const input = document.getElementById('passcode').value;

@@ -273,6 +273,49 @@
         #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 0; font-size: 0.85rem; text-align: right; }
         input[type="number"] { background: var(--search-bg); color: var(--text-color); border: 1px solid var(--search-border); font-size: 1rem; }
+
+        /* 記憶曲線：滑動提示標籤 */
+        .swipe-hint {
+            display: none;
+            font-size: 0.78rem;
+            color: var(--sub-text);
+            margin-top: 8px;
+            padding: 0 2px;
+            letter-spacing: 0.3px;
+        }
+        .card.revealed .swipe-hint {
+            display: block;
+        }
+        /* 滑動時的卡片覆蓋層 */
+        .swipe-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s;
+            letter-spacing: 1px;
+        }
+        .swipe-overlay.good { background: rgba(46,204,113,0.15); color: #2ecc71; }
+        .swipe-overlay.hard { background: rgba(231,76,60,0.15);  color: #e74c3c; }
+
+        /* 複習模式：badge 顯示待複習數 */
+        .review-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 1px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -324,6 +367,7 @@
             <span class="sidebar-label">主要模式</span>
             <button id="btn-random" class="side-full-btn active" onclick="switchMode('random')">🎲 隨機字卡</button>
             <button id="btn-fav" class="side-full-btn" style="color:var(--star-color);" onclick="showFavorites(this)">⭐ 已加星號</button>
+            <button id="btn-review" class="side-full-btn" onclick="showReview(this)">⏰ 複習<span id="review-badge" class="review-badge" style="display:none"></span></button>
         </div>
         <div class="sidebar-section">
             <span class="sidebar-label">分類詞庫</span>
@@ -634,7 +678,8 @@ async function initAllData() {
         document.getElementById('loading').style.display = 'none';
         displayRandom();
         refreshSiteStats();
-        initExternalLinks(); 
+        initExternalLinks();
+        updateReviewBadge(); // 初始化複習 badge
         
     } catch (e) { 
         console.error(e);
@@ -882,7 +927,7 @@ function convertNumbersToThaiText(text) {
             if (currentMode === 'consonants') {
                 const filterHtml = `
                     <div class="filter-container">
-                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全</button>
+                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全部</button>
                         <button class="filter-btn ${currentConsonantFilter === '中' ? 'active' : ''}" onclick="displayConsonants('中')">🔸 中</button>
                         <button class="filter-btn ${currentConsonantFilter === '高' ? 'active' : ''}" onclick="displayConsonants('高')">🔺 高</button>
                         <button class="filter-btn ${currentConsonantFilter === '低' ? 'active' : ''}" onclick="displayConsonants('低')">🔻 低</button>
@@ -893,11 +938,10 @@ function convertNumbersToThaiText(text) {
                 // 母音模式的篩選器
                 const filterHtml = `
                     <div class="filter-container">
-                        <button class="filter-btn ${currentVowelFilter === 'all' ? 'active' : ''}" onclick="displayVowels('all')">📚 全</button>
+                        <button class="filter-btn ${currentVowelFilter === 'all' ? 'active' : ''}" onclick="displayVowels('all')">📚 全部</button>
                         <button class="filter-btn ${currentVowelFilter === '短母音' ? 'active' : ''}" onclick="displayVowels('短母音')">⚡ 短</button>
                         <button class="filter-btn ${currentVowelFilter === '長母音' ? 'active' : ''}" onclick="displayVowels('長母音')">📏 長</button>
                         <button class="filter-btn ${currentVowelFilter === '特殊母音' ? 'active' : ''}" onclick="displayVowels('特殊母音')">💎 特</button>
-                        <button class="filter-btn ${currentVowelFilter === '複合母音' ? 'active' : ''}" onclick="displayVowels('複合母音')">🔗 複</button>
                     </div>
                 `;
                 container.innerHTML = filterHtml;
@@ -930,10 +974,13 @@ function convertNumbersToThaiText(text) {
                 const hasAudioUrl = item.audioUrl && item.audioUrl.trim() !== '';
                 
                 div.innerHTML = `
+                    <div class="swipe-overlay good">✓ 記住了</div>
+                    <div class="swipe-overlay hard">✗ 還不熟</div>
                     <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFav('${item.id || item.char}', this, event)">★</button>
                     <div class="card-content">
                         <div class="thai" lang="th">${thaiText}</div>
                         <div class="chinese">${chineseText}</div>
+                        <div class="swipe-hint">← 還不熟　記住了 →</div>
                     </div>
                     <div class="card-action">
                         <button class="btn-speak" onclick="${hasAudioUrl ? `playAudio('${item.audioUrl}', this, event)` : `speak('${speakText}', this, event)`}">🔊</button>
@@ -941,6 +988,7 @@ function convertNumbersToThaiText(text) {
                     </div>
                 `;
                 container.appendChild(div);
+                bindSwipe(div, item.id || item.char);
             });
         }
 
@@ -970,6 +1018,7 @@ function convertNumbersToThaiText(text) {
             else if (currentMode === 'fav') showFavorites(document.getElementById('btn-fav'));
             else if (currentMode === 'consonants') displayConsonants(currentConsonantFilter);
             else if (currentMode === 'vowels') displayVowels(currentVowelFilter);
+            else if (currentMode === 'review') showReview(document.getElementById('btn-review'));
             else switchSource(currentMode, null);
         }
 
@@ -1134,7 +1183,6 @@ function convertNumbersToThaiText(text) {
             if (filter === '短母音') filterText = '短母音 ';
             else if (filter === '長母音') filterText = '長母音 ';
             else if (filter === '特殊母音') filterText = '特殊母音 ';
-            else if (filter === '複合母音') filterText = '複合母音 ';
             
             document.getElementById('search-info').innerText = `${filterText}${filteredData.length} 個`;
         }
@@ -1351,6 +1399,144 @@ function speak(text, btnElement, e) {
     
     window.speechSynthesis.speak(msg);
 }
+
+// ===== 記憶曲線（SRS）邏輯 =====
+
+function getSRSData() {
+    return JSON.parse(localStorage.getItem('thai_srs') || '{}');
+}
+function saveSRSData(data) {
+    localStorage.setItem('thai_srs', JSON.stringify(data));
+}
+
+function rateSRS(id, rating, e) {
+    if (e) e.stopPropagation();
+    const now = Date.now();
+    const srs = getSRSData();
+    const card = srs[id] || { interval: 1, nextReview: now, lapses: 0 };
+
+    if (rating === 'good') {
+        card.interval = card.interval < 1 ? 1
+                      : card.interval < 3 ? 3
+                      : card.interval < 7 ? 7
+                      : card.interval < 14 ? 14
+                      : Math.min(Math.round(card.interval * 2), 180);
+    } else {
+        card.interval = 1;
+        card.lapses = (card.lapses || 0) + 1;
+    }
+
+    card.nextReview = now + card.interval * 86400000;
+    srs[id] = card;
+    saveSRSData(srs);
+    updateReviewBadge();
+}
+
+function bindSwipe(cardEl, itemId) {
+    let startX = 0, startY = 0, isDragging = false;
+    const THRESHOLD = 60; // px，觸發評分的最小滑動距離
+
+    function onStart(x, y) {
+        startX = x; startY = y; isDragging = true;
+    }
+    function onMove(x, y) {
+        if (!isDragging) return;
+        // 垂直滑動超過水平就不觸發（避免誤判捲動）
+        if (Math.abs(y - startY) > Math.abs(x - startX) + 10) return;
+
+        const dx = x - startX;
+        cardEl.style.transform = `translateX(${dx * 0.3}px)`;
+
+        const overlayGood = cardEl.querySelector('.swipe-overlay.good');
+        const overlayHard = cardEl.querySelector('.swipe-overlay.hard');
+        if (dx > 20)  { overlayGood.style.opacity = Math.min(dx / THRESHOLD, 1); overlayHard.style.opacity = 0; }
+        else if (dx < -20) { overlayHard.style.opacity = Math.min(-dx / THRESHOLD, 1); overlayGood.style.opacity = 0; }
+        else { overlayGood.style.opacity = 0; overlayHard.style.opacity = 0; }
+    }
+    function onEnd(x) {
+        if (!isDragging) return;
+        isDragging = false;
+        const dx = x - startX;
+        cardEl.style.transform = '';
+        cardEl.querySelector('.swipe-overlay.good').style.opacity = 0;
+        cardEl.querySelector('.swipe-overlay.hard').style.opacity = 0;
+
+        // 只有在遮蔽模式且已翻開的卡片才記錄評分
+        if (!isQuizMode || !cardEl.classList.contains('revealed')) return;
+
+        if (dx > THRESHOLD) {
+            rateSRS(itemId, 'good');
+            flashCard(cardEl, 'good');
+        } else if (dx < -THRESHOLD) {
+            rateSRS(itemId, 'hard');
+            flashCard(cardEl, 'hard');
+        }
+    }
+
+    // Touch
+    cardEl.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    cardEl.addEventListener('touchmove',  e => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    cardEl.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
+
+    // Mouse（桌機也能用）
+    cardEl.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
+    cardEl.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX, e.clientY); });
+    cardEl.addEventListener('mouseup',   e => onEnd(e.clientX));
+    cardEl.addEventListener('mouseleave',e => { if (isDragging) onEnd(e.clientX); });
+}
+
+function flashCard(cardEl, type) {
+    cardEl.style.transition = 'opacity 0.25s';
+    cardEl.style.opacity = '0.35';
+    setTimeout(() => { cardEl.style.opacity = '1'; cardEl.style.transition = ''; }, 280);
+}
+
+function getDueItems() {
+    const now = Date.now();
+    const srs = getSRSData();
+    return allData.filter(item => {
+        const id = item.id || item.char;
+        const card = srs[id];
+        return card && card.nextReview <= now;
+    });
+}
+
+function updateReviewBadge() {
+    const due = getDueItems();
+    const badge = document.getElementById('review-badge');
+    if (!badge) return;
+    if (due.length > 0) {
+        badge.style.display = 'inline-block';
+        badge.textContent = due.length;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function showReview(btn) {
+    const due = getDueItems();
+    currentMode = 'review';
+
+    if (due.length === 0) {
+        const container = document.getElementById('app');
+        container.innerHTML = `
+            <div style="text-align:center; padding:40px 20px; color:var(--sub-text);">
+                <div style="font-size:2rem; margin-bottom:12px;">✅</div>
+                <div style="font-size:1.1rem;">目前沒有待複習的詞</div>
+                <div style="font-size:0.85rem; margin-top:8px;">翻開字卡後點「記住了」或「還不熟」來建立複習清單</div>
+            </div>`;
+        document.getElementById('search-info').innerText = '';
+    } else {
+        renderList(due);
+        document.getElementById('search-info').innerText = `待複習 ${due.length} 個`;
+    }
+
+    document.querySelectorAll('.source-btn, .side-full-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    toggleSidebar();
+}
+
+// ===== END SRS =====
 
 function checkPasscode() {
     const input = document.getElementById('passcode').value;

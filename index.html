@@ -274,6 +274,56 @@
         #search-info { color: var(--sub-text); margin-bottom: 0; font-size: 0.85rem; text-align: right; }
         input[type="number"] { background: var(--search-bg); color: var(--text-color); border: 1px solid var(--search-border); font-size: 1rem; }
 
+        /* 子音/母音 4欄格狀佈局 */
+        #phonetic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 520px;
+            padding: 4px 0;
+        }
+        .phonetic-card {
+            background: var(--card-bg);
+            border: 1px solid var(--search-border);
+            border-radius: 14px;
+            padding: 14px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-align: center;
+            min-height: 80px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .phonetic-card:active {
+            transform: scale(0.94);
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        .phonetic-card .p-char {
+            font-family: "Leelawadee UI", "Ayuthaya", "Thonburi", sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.2;
+        }
+        .phonetic-card .p-roman {
+            font-size: 0.72rem;
+            color: var(--sub-text);
+            letter-spacing: 0.3px;
+        }
+        .phonetic-card.playing {
+            box-shadow: 0 0 0 2px var(--accent-color);
+            background: var(--btn-active);
+        }
+        .phonetic-card.playing .p-char,
+        .phonetic-card.playing .p-roman {
+            color: white;
+        }
+
         /* ===== 影子跟讀模式 ===== */
         #shadow-mode-overlay {
             display: none;
@@ -1110,6 +1160,41 @@ function convertNumbersToThaiText(text) {
 
             list.forEach((item, index) => {
                 const isFav = favorites.includes(item.id || item.char);
+                const isPhonetic = item.char && item.roman;
+
+                // ── 子音/母音：4欄小卡，點擊直接發音 ──
+                if (isPhonetic) {
+                    let grid = container.querySelector('#phonetic-grid');
+                    if (!grid) {
+                        grid = document.createElement('div');
+                        grid.id = 'phonetic-grid';
+                        container.appendChild(grid);
+                    }
+                    const card = document.createElement('div');
+                    card.className = 'phonetic-card';
+                    card.id = `card-${index}`;
+                    card.innerHTML = `
+                        <div class="p-char" lang="th">${item.char}</div>
+                        <div class="p-roman">${item.roman}</div>
+                    `;
+                    card.onclick = () => {
+                        // 視覺回饋
+                        card.classList.add('playing');
+                        setTimeout(() => card.classList.remove('playing'), 600);
+                        // 發音
+                        const hasAudio = item.audioUrl && item.audioUrl.trim() !== '';
+                        if (hasAudio) {
+                            const audio = new Audio(item.audioUrl);
+                            audio.play().catch(() => {});
+                        } else {
+                            speak(item.char, null, null);
+                        }
+                    };
+                    grid.appendChild(card);
+                    return; // 不走下面的一般卡片邏輯
+                }
+
+                // ── 一般詞彙卡片（維持原本樣式）──
                 const div = document.createElement('div');
                 // --- 關鍵修改：生成時判斷是否要加 art-font ---
         div.className = 'card' + (isArtFont ? ' art-font' : '');
@@ -1118,11 +1203,9 @@ function convertNumbersToThaiText(text) {
                 div.id = `card-${index}`;
                 div.onclick = function(e) { if (isQuizMode && !e.target.closest('button')) this.classList.toggle('revealed'); };
                 
-                // 檢查是否為字母數據（有char和roman字段）
-                const isPhonetic = item.char && item.roman;
-                const thaiText = isPhonetic ? item.char : item.thai;
-                const chineseText = isPhonetic ? item.roman : item.chinese;
-                const sourceText = isPhonetic ? '字母' : item.source;
+                const thaiText = item.thai;
+                const chineseText = item.chinese;
+                const sourceText = item.source;
                 const speakText = thaiText;
                 
                 // 檢查是否有外部音檔 (母音使用)

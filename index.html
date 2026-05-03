@@ -1433,34 +1433,43 @@ function rateSRS(id, rating, e) {
 }
 
 function bindSwipe(cardEl, itemId) {
-    let startX = 0, startY = 0, isDragging = false;
-    const THRESHOLD = 60; // px，觸發評分的最小滑動距離
+    let startX = 0, startY = 0, isDragging = false, lockedAxis = null;
+    const THRESHOLD = 40; // 降低觸發門檻
 
     function onStart(x, y) {
-        startX = x; startY = y; isDragging = true;
+        startX = x; startY = y; isDragging = true; lockedAxis = null;
     }
     function onMove(x, y) {
         if (!isDragging) return;
-        // 垂直滑動超過水平就不觸發（避免誤判捲動）
-        if (Math.abs(y - startY) > Math.abs(x - startX) + 10) return;
-
         const dx = x - startX;
-        cardEl.style.transform = `translateX(${dx * 0.3}px)`;
+        const dy = y - startY;
+
+        // 尚未鎖定方向：判斷這次是水平還是垂直
+        if (!lockedAxis) {
+            if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return; // 還沒移夠，繼續等
+            lockedAxis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+        }
+        if (lockedAxis === 'y') return; // 垂直捲動，不干涉
 
         const overlayGood = cardEl.querySelector('.swipe-overlay.good');
         const overlayHard = cardEl.querySelector('.swipe-overlay.hard');
-        if (dx > 20)  { overlayGood.style.opacity = Math.min(dx / THRESHOLD, 1); overlayHard.style.opacity = 0; }
-        else if (dx < -20) { overlayHard.style.opacity = Math.min(-dx / THRESHOLD, 1); overlayGood.style.opacity = 0; }
-        else { overlayGood.style.opacity = 0; overlayHard.style.opacity = 0; }
+        // 卡片跟著手指移動（1:1），有感
+        cardEl.style.transform = `translateX(${dx}px) rotate(${dx * 0.02}deg)`;
+        if (dx > 0)  { overlayGood.style.opacity = Math.min(dx / THRESHOLD, 1); overlayHard.style.opacity = 0; }
+        else         { overlayHard.style.opacity = Math.min(-dx / THRESHOLD, 1); overlayGood.style.opacity = 0; }
     }
     function onEnd(x) {
         if (!isDragging) return;
         isDragging = false;
         const dx = x - startX;
+        // 彈回動畫
+        cardEl.style.transition = 'transform 0.2s ease';
         cardEl.style.transform = '';
+        setTimeout(() => { cardEl.style.transition = ''; }, 200);
         cardEl.querySelector('.swipe-overlay.good').style.opacity = 0;
         cardEl.querySelector('.swipe-overlay.hard').style.opacity = 0;
 
+        if (lockedAxis === 'y') return;
         // 只有在遮蔽模式且已翻開的卡片才記錄評分
         if (!isQuizMode || !cardEl.classList.contains('revealed')) return;
 

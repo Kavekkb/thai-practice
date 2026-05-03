@@ -312,23 +312,28 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             text-align: center;
             flex: 1;
             width: 100%;
             max-width: 480px;
-            margin-top: 60px;
-            margin-bottom: 20px;
-            gap: 16px;
+            margin-top: 70px;
+            margin-bottom: 12px;
+            gap: 12px;
+            overflow: hidden;
         }
         .shadow-thai {
             font-family: "Leelawadee UI", "Ayuthaya", "Thonburi", sans-serif;
-            font-size: 3rem;
+            font-size: clamp(1.4rem, 5vw, 2.8rem);
             font-weight: 700;
-            line-height: 1.5;
+            line-height: 1.6;
             letter-spacing: 1px;
             color: var(--text-color);
             transition: opacity 0.3s;
+            width: 100%;
+            overflow-y: auto;
+            max-height: 120px;
+            padding: 0 4px;
         }
         .shadow-chinese {
             font-size: 1.1rem;
@@ -902,18 +907,22 @@ async function openEssayListPage() {
         let html = `<h2 style="text-align:center; color:var(--accent-color); margin-bottom:20px;">📝 短文閱讀清單</h2>`;
 
         allRows.forEach((cols, index) => {
-            if (cols.length >= 2) {
-                const title = cols[0].trim();
-                const content = cols[1].trim();
-                const spotifyUrl = cols[2] ? cols[2].trim() : '';
+            if (cols.length >= 3) {
+                const source     = cols[0].trim();
+                const title      = cols[1].trim();
+                const content    = cols[2].trim();
+                const spotifyUrl = cols[3] ? cols[3].trim() : '';
+                const audioUrl   = cols[4] ? cols[4].trim() : '';
 
                 if (title && content) {
-                    essayData.push({ title, content, spotifyUrl });
-                    // 呈現標題按鈕
+                    essayData.push({ source, title, content, spotifyUrl, audioUrl });
                     html += `
                         <div onclick="showEssayDetail(${essayData.length - 1})" style="background:var(--card-bg); padding:18px; border-radius:10px; margin-bottom:12px; border:1px solid var(--search-border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: 0.3s;">
-                            <span style="font-size:1.6rem; font-weight:bold; color:var(--text-color);">■ ${title}</span>
-                            <span style="color:var(--accent-color);">閱讀更多 ❯</span>
+                            <div>
+                                ${source ? `<div style="font-size:0.78rem; color:var(--sub-text); margin-bottom:4px;">📂 ${source}</div>` : ''}
+                                <span style="font-size:1.1rem; font-weight:bold; color:var(--text-color);">■ ${title}</span>
+                            </div>
+                            <span style="color:var(--accent-color); flex-shrink:0; margin-left:10px;">閱讀更多 ❯</span>
                         </div>`;
                 }
             }
@@ -928,27 +937,40 @@ async function openEssayListPage() {
 }
 
 // 2. 顯示單篇短文內容
+function playEssayAudio(url, btn) {
+    if (btn) btn.textContent = '⏸ 播放中';
+    const audio = new Audio(url);
+    audio.play().catch(() => {});
+    audio.onended = () => { if (btn) btn.textContent = '🔊 播放音檔'; };
+    audio.onerror = () => { if (btn) btn.textContent = '🔊 播放音檔'; };
+}
+
 function showEssayDetail(index) {
     const container = document.getElementById('essay-dynamic-content');
     const essay = essayData[index];
     
-    // 修正縮進問題：先 trim() 掉開頭空格與隱藏換行，再處理內文換行
     const formattedContent = essay.content.trim().replace(/\\n|\r?\n/g, '<br>');
+    const hasAudio = essay.audioUrl && essay.audioUrl.trim() !== '';
+    const speakContent = essay.content.replace(/\\n|\r?\n/g, ' ');
 
     let html = `
         <div style="display:flex; align-items:center; margin-bottom:20px;">
             <button onclick="openEssayListPage()" style="background:none; border:none; color:var(--accent-color); cursor:pointer; font-size:1.1rem; padding:0;">❮ 返回清單</button>
         </div>
         
+        ${essay.source ? `<div style="font-size:0.8rem; color:var(--sub-text); margin-bottom:6px;">📂 ${essay.source}</div>` : ''}
         <h2 style="color:var(--accent-color); margin-bottom:15px; border-left:6px solid var(--accent-color); padding-left:15px; font-size:1.5rem;">${essay.title}</h2>
         
         <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <span style="font-size:1rem; color:var(--sub-text);">語音工具：</span>
-            <button onclick="speak('${essay.content.replace(/\\n|\r?\n/g, ' ')}', this)" style="padding:6px 14px; border-radius:5px; background:var(--accent-color); color:white; border:none; cursor:pointer; font-size:1rem;">🔊 朗讀短文</button>
+            ${hasAudio
+                ? `<button onclick="playEssayAudio('${essay.audioUrl}', this)" style="padding:6px 14px; border-radius:5px; background:var(--accent-color); color:white; border:none; cursor:pointer; font-size:1rem;">🔊 播放音檔</button>`
+                : `<button onclick="speak('${speakContent.replace(/'/g, "\\'")}', this)" style="padding:6px 14px; border-radius:5px; background:var(--accent-color); color:white; border:none; cursor:pointer; font-size:1rem;">🔊 朗讀短文</button>`
+            }
             <button onclick="openEssayShadow(${index})" style="padding:6px 14px; border-radius:5px; background:var(--btn-active); color:white; border:none; cursor:pointer; font-size:1rem;">🎙️ 影子跟讀</button>
         </div>
 
-        <div style="font-size:1.4rem; line-height:2.3; color:var(--text-color); white-space: pre-wrap; text-align:left; background:var(--card-bg); padding:25px; border-radius:12px; border:1px solid var(--search-border); letter-spacing: 0.8px;">
+        <div style="font-size:1.4rem; line-height:2.3; color:var(--text-color); white-space:pre-wrap; text-align:left; background:var(--card-bg); padding:25px; border-radius:12px; border:1px solid var(--search-border); letter-spacing:0.8px;">
             ${formattedContent}
         </div>
 
@@ -1605,7 +1627,8 @@ function openEssayShadow(index) {
     shadowList = sentences.map((s, i) => ({
         thai: s,
         chinese: '',   // 短文模式沒有中文對照
-        id: `essay-${index}-${i}`
+        id: `essay-${index}-${i}`,
+        audioUrl: ''
     }));
     shadowIndex = 0;
     shadowIsAuto = false;

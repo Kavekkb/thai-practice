@@ -273,6 +273,158 @@
         #loading { margin-top: 50px; color: var(--sub-text); }
         #search-info { color: var(--sub-text); margin-bottom: 0; font-size: 0.85rem; text-align: right; }
         input[type="number"] { background: var(--search-bg); color: var(--text-color); border: 1px solid var(--search-border); font-size: 1rem; }
+
+        /* ===== 影子跟讀模式 ===== */
+        #shadow-mode-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            z-index: 5000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #shadow-mode-overlay.active { display: flex; }
+
+        .shadow-header {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--search-border);
+        }
+        .shadow-title { font-size: 0.9rem; color: var(--sub-text); font-weight: bold; }
+        .shadow-close {
+            background: none; border: none; color: var(--sub-text);
+            font-size: 1.5rem; cursor: pointer; padding: 4px 8px;
+        }
+        .shadow-progress {
+            font-size: 0.85rem; color: var(--sub-text);
+        }
+
+        /* 主卡片區 */
+        .shadow-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+            max-width: 480px;
+            margin-top: 60px;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+        .shadow-thai {
+            font-family: "Leelawadee UI", "Ayuthaya", "Thonburi", sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 1px;
+            color: var(--text-color);
+            transition: opacity 0.3s;
+        }
+        .shadow-chinese {
+            font-size: 1.1rem;
+            color: var(--sub-text);
+            min-height: 1.6em;
+            transition: opacity 0.3s;
+        }
+        .shadow-chinese.hidden { opacity: 0; }
+
+        /* 狀態提示 */
+        .shadow-status {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            min-height: 1.4em;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* 波形動畫（播放中） */
+        .shadow-wave {
+            display: none;
+            gap: 4px;
+            align-items: flex-end;
+            height: 24px;
+        }
+        .shadow-wave.active { display: flex; }
+        .shadow-wave span {
+            width: 4px;
+            background: var(--accent-color);
+            border-radius: 2px;
+            animation: wave 0.8s ease-in-out infinite;
+        }
+        .shadow-wave span:nth-child(2) { animation-delay: 0.1s; }
+        .shadow-wave span:nth-child(3) { animation-delay: 0.2s; }
+        .shadow-wave span:nth-child(4) { animation-delay: 0.3s; }
+        .shadow-wave span:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes wave {
+            0%, 100% { height: 6px; }
+            50% { height: 20px; }
+        }
+
+        /* 底部控制列 */
+        .shadow-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 480px;
+        }
+        .shadow-btn-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        .shadow-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--search-border);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .shadow-btn:active { opacity: 0.7; transform: scale(0.97); }
+        .shadow-btn.primary {
+            background: var(--btn-active);
+            color: white;
+            border-color: var(--btn-active);
+            font-size: 1rem;
+        }
+        .shadow-btn.accent {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        /* 速度＆間隔設定列 */
+        .shadow-settings {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--sub-text);
+        }
+        .shadow-settings select {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--search-border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -323,6 +475,7 @@
         <div class="sidebar-section">
             <span class="sidebar-label">主要模式</span>
             <button id="btn-random" class="side-full-btn active" onclick="switchMode('random')">🎲 隨機字卡</button>
+            <button id="btn-shadow" class="side-full-btn" onclick="openShadowMode()">🎙️ 影子跟讀</button>
             <button id="btn-fav" class="side-full-btn" style="color:var(--star-color);" onclick="showFavorites(this)">⭐ 已加星號</button>
         </div>
         <div class="sidebar-section">
@@ -1394,10 +1547,241 @@ window.onscroll = function() {
     else btn.style.display = "none";
 };
 
+// ===== 影子跟讀模式 =====
+
+let shadowList = [];
+let shadowIndex = 0;
+let shadowIsAuto = false;
+let shadowAutoTimer = null;
+let shadowRevealed = false;
+let shadowIsPlaying = false;
+
+function openShadowMode() {
+    toggleSidebar();
+
+    // 用目前已顯示的詞庫，若沒有就用全部隨機抽
+    shadowList = currentDisplayedList.length > 0
+        ? [...currentDisplayedList]
+        : [...allData].sort(() => 0.5 - Math.random()).slice(0, quizCount);
+
+    shadowIndex = 0;
+    shadowIsAuto = false;
+    shadowRevealed = false;
+
+    document.getElementById('shadow-mode-overlay').classList.add('active');
+    shadowRender();
+}
+
+function closeShadowMode() {
+    shadowStopAuto();
+    window.speechSynthesis.cancel();
+    document.getElementById('shadow-mode-overlay').classList.remove('active');
+}
+
+function shadowRender() {
+    const item = shadowList[shadowIndex];
+    if (!item) return;
+
+    const isPhonetic = item.char && item.roman;
+    const thaiText  = isPhonetic ? item.char  : item.thai;
+    const zhText    = isPhonetic ? item.roman  : item.chinese;
+
+    document.getElementById('shadow-thai').textContent    = thaiText;
+    document.getElementById('shadow-chinese').textContent = zhText;
+    document.getElementById('shadow-progress').textContent = `${shadowIndex + 1} / ${shadowList.length}`;
+
+    // 重設中文顯示狀態
+    shadowRevealed = false;
+    document.getElementById('shadow-chinese').classList.add('hidden');
+    document.getElementById('shadow-reveal-btn').textContent = '👁 顯示中文';
+
+    shadowSetStatus('點播放，跟著唸一次');
+    shadowSetWave(false);
+}
+
+function shadowSetStatus(text) {
+    document.getElementById('shadow-status').textContent = text;
+}
+function shadowSetWave(on) {
+    document.getElementById('shadow-wave').classList.toggle('active', on);
+}
+
+async function shadowPlayCurrent() {
+    if (shadowIsPlaying) return;
+    const item = shadowList[shadowIndex];
+    if (!item) return;
+
+    const isPhonetic = item.char && item.roman;
+    const thaiText = isPhonetic ? item.char : item.thai;
+    const speed = parseFloat(document.getElementById('shadow-speed').value);
+    const gap   = parseInt(document.getElementById('shadow-gap').value);
+
+    shadowIsPlaying = true;
+    document.getElementById('shadow-play-btn').textContent = '⏸ 播放中';
+
+    // 播放
+    shadowSetStatus('🔊 聆聽...');
+    shadowSetWave(true);
+
+    if (item.audioUrl && item.audioUrl.trim()) {
+        await shadowPlayAudio(item.audioUrl);
+    } else {
+        await shadowSpeak(thaiText, speed);
+    }
+
+    // 等待跟讀間隔
+    shadowSetWave(false);
+    shadowSetStatus(`🎙 跟著唸... (${gap/1000}秒)`);
+
+    await new Promise(r => setTimeout(r, gap));
+
+    shadowSetStatus('✓ 完成，點下一個或繼續自動');
+    document.getElementById('shadow-play-btn').textContent = '▶ 再播一次';
+    shadowIsPlaying = false;
+
+    // 自動模式下：播完自動進下一張
+    if (shadowIsAuto) {
+        await new Promise(r => setTimeout(r, 600));
+        if (shadowIsAuto) shadowNext();
+    }
+}
+
+function shadowSpeak(text, speed) {
+    return new Promise(resolve => {
+        window.speechSynthesis.cancel();
+        let processed = text.normalize('NFC').trim();
+        processed = convertNumbersToThaiText(processed);
+        processed = processed.replace(/([\u0e00-\u0e7f]+)ๆ/g, '$1 $1');
+
+        const msg = new SpeechSynthesisUtterance(processed);
+        const voices = window.speechSynthesis.getVoices();
+        const best = voices.find(v => v.lang.includes('th') && (v.name.includes('Siri') || v.name.includes('Enhanced')))
+                  || voices.find(v => v.lang.includes('th'));
+        if (best) msg.voice = best;
+        msg.lang = 'th-TH';
+        msg.rate = speed;
+        msg.onend = resolve;
+        msg.onerror = resolve;
+        window.speechSynthesis.speak(msg);
+    });
+}
+
+function shadowPlayAudio(url) {
+    return new Promise(resolve => {
+        const audio = new Audio(url);
+        audio.onended = resolve;
+        audio.onerror = resolve;
+        audio.play().catch(resolve);
+    });
+}
+
+function shadowNext() {
+    window.speechSynthesis.cancel();
+    shadowIsPlaying = false;
+    if (shadowIndex < shadowList.length - 1) {
+        shadowIndex++;
+        shadowRender();
+        document.getElementById('shadow-play-btn').textContent = '▶ 播放';
+        if (shadowIsAuto) shadowPlayCurrent();
+    } else {
+        // 到底了
+        shadowStopAuto();
+        shadowSetStatus('🎉 全部完成！');
+        document.getElementById('shadow-play-btn').textContent = '▶ 播放';
+    }
+}
+
+function shadowPrev() {
+    window.speechSynthesis.cancel();
+    shadowIsPlaying = false;
+    shadowStopAuto();
+    if (shadowIndex > 0) {
+        shadowIndex--;
+        shadowRender();
+        document.getElementById('shadow-play-btn').textContent = '▶ 播放';
+    }
+}
+
+function shadowToggleReveal() {
+    shadowRevealed = !shadowRevealed;
+    document.getElementById('shadow-chinese').classList.toggle('hidden', !shadowRevealed);
+    document.getElementById('shadow-reveal-btn').textContent = shadowRevealed ? '🙈 隱藏中文' : '👁 顯示中文';
+}
+
+function shadowToggleAuto() {
+    shadowIsAuto = !shadowIsAuto;
+    const btn = document.getElementById('shadow-auto-btn');
+    if (shadowIsAuto) {
+        btn.textContent = '⏹ 停止自動';
+        btn.style.background = 'var(--danger-color)';
+        if (!shadowIsPlaying) shadowPlayCurrent();
+    } else {
+        shadowStopAuto();
+    }
+}
+
+function shadowStopAuto() {
+    shadowIsAuto = false;
+    const btn = document.getElementById('shadow-auto-btn');
+    btn.textContent = '⏩ 自動輪播';
+    btn.style.background = 'var(--accent-color)';
+}
+
+// ===== END 影子跟讀 =====
+
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
+
+<!-- 影子跟讀模式 -->
+<div id="shadow-mode-overlay">
+    <div class="shadow-header">
+        <div class="shadow-title">🎙️ 影子跟讀</div>
+        <div class="shadow-progress" id="shadow-progress">0 / 0</div>
+        <button class="shadow-close" onclick="closeShadowMode()">✕</button>
+    </div>
+
+    <div class="shadow-card">
+        <div class="shadow-wave" id="shadow-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="shadow-status" id="shadow-status">準備開始</div>
+        <div class="shadow-thai" id="shadow-thai">—</div>
+        <div class="shadow-chinese hidden" id="shadow-chinese">—</div>
+    </div>
+
+    <div class="shadow-controls">
+        <!-- 設定列 -->
+        <div class="shadow-settings">
+            <span>語速</span>
+            <select id="shadow-speed">
+                <option value="0.6">慢 0.6x</option>
+                <option value="0.8">稍慢 0.8x</option>
+                <option value="1.0" selected>正常 1x</option>
+                <option value="1.2">稍快 1.2x</option>
+            </select>
+            <span>跟讀間隔</span>
+            <select id="shadow-gap">
+                <option value="1500">1.5 秒</option>
+                <option value="2000" selected>2 秒</option>
+                <option value="3000">3 秒</option>
+                <option value="4000">4 秒</option>
+            </select>
+        </div>
+        <!-- 主控制按鈕 -->
+        <div class="shadow-btn-row">
+            <button class="shadow-btn" onclick="shadowPrev()">← 上一個</button>
+            <button class="shadow-btn primary" id="shadow-play-btn" onclick="shadowPlayCurrent()">▶ 播放</button>
+            <button class="shadow-btn" onclick="shadowNext()">下一個 →</button>
+        </div>
+        <!-- 輔助按鈕 -->
+        <div class="shadow-btn-row">
+            <button class="shadow-btn" id="shadow-reveal-btn" onclick="shadowToggleReveal()">👁 顯示中文</button>
+            <button class="shadow-btn accent" id="shadow-auto-btn" onclick="shadowToggleAuto()">⏩ 自動輪播</button>
+        </div>
+    </div>
+</div>
 
     <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:99; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);">↑</button>
 </body>

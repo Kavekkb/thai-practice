@@ -897,6 +897,7 @@ function convertNumbersToThaiText(text) {
                         <button class="filter-btn ${currentVowelFilter === '短母音' ? 'active' : ''}" onclick="displayVowels('短母音')">⚡ 短</button>
                         <button class="filter-btn ${currentVowelFilter === '長母音' ? 'active' : ''}" onclick="displayVowels('長母音')">📏 長</button>
                         <button class="filter-btn ${currentVowelFilter === '特殊母音' ? 'active' : ''}" onclick="displayVowels('特殊母音')">💎 特</button>
+                        <button class="filter-btn ${currentVowelFilter === '複合母音' ? 'active' : ''}" onclick="displayVowels('複合母音')">🔗 複</button>
                     </div>
                 `;
                 container.innerHTML = filterHtml;
@@ -1133,6 +1134,7 @@ function convertNumbersToThaiText(text) {
             if (filter === '短母音') filterText = '短母音 ';
             else if (filter === '長母音') filterText = '長母音 ';
             else if (filter === '特殊母音') filterText = '特殊母音 ';
+            else if (filter === '複合母音') filterText = '複合母音 ';
             
             document.getElementById('search-info').innerText = `${filterText}${filteredData.length} 個`;
         }

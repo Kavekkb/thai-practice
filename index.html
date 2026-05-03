@@ -872,26 +872,52 @@ async function openEssayListPage() {
         const url = `${base_url}&gid=${ESSAY_GID}`;
         const response = await fetch(url);
         const csvText = await response.text();
-        const rows = csvText.split('\n').slice(1);
-        
+
+        // 正確解析含有欄內換行的 CSV
+        function parseCSVMultiline(text) {
+            const rows = [];
+            let col = '', cols = [], inQuote = false;
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                if (ch === '"') {
+                    if (inQuote && text[i+1] === '"') { col += '"'; i++; } // 跳脫引號 ""
+                    else inQuote = !inQuote;
+                } else if (ch === ',' && !inQuote) {
+                    cols.push(col); col = '';
+                } else if ((ch === '\n' || (ch === '\r' && text[i+1] === '\n')) && !inQuote) {
+                    if (ch === '\r') i++;
+                    cols.push(col); col = '';
+                    rows.push(cols); cols = [];
+                } else {
+                    col += ch;
+                }
+            }
+            if (col || cols.length) { cols.push(col); rows.push(cols); }
+            return rows;
+        }
+
+        const allRows = parseCSVMultiline(csvText).slice(1); // 跳過標題行
+
         essayData = []; // 清空舊資料
         let html = `<h2 style="text-align:center; color:var(--accent-color); margin-bottom:20px;">📝 短文閱讀清單</h2>`;
-        
-        rows.forEach((row, index) => {
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+        allRows.forEach((cols, index) => {
             if (cols.length >= 2) {
-                const title = cols[0].replace(/"/g, '').trim();
-                const content = cols[1].replace(/"/g, '').trim();
-                const spotifyUrl = cols[2] ? cols[2].replace(/"/g, '').trim() : ''; // 假設 C 欄是 Spotify 連結
+                const title = cols[0].trim();
+                const content = cols[1].trim();
+                const spotifyUrl = cols[2] ? cols[2].trim() : '';
 
                 if (title && content) {
                     essayData.push({ title, content, spotifyUrl });
                     // 呈現標題按鈕
                     html += `
-                        <div onclick="showEssayDetail(${index})" style="background:var(--card-bg); padding:18px; border-radius:10px; margin-bottom:12px; border:1px solid var(--search-border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: 0.3s;">
+                        <div onclick="showEssayDetail(${essayData.length - 1})" style="background:var(--card-bg); padding:18px; border-radius:10px; margin-bottom:12px; border:1px solid var(--search-border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: 0.3s;">
                             <span style="font-size:1.6rem; font-weight:bold; color:var(--text-color);">■ ${title}</span>
                             <span style="color:var(--accent-color);">閱讀更多 ❯</span>
                         </div>`;
+                }
+            }
+        });
                 }
             }
         });

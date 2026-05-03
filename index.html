@@ -882,7 +882,7 @@ function convertNumbersToThaiText(text) {
             if (currentMode === 'consonants') {
                 const filterHtml = `
                     <div class="filter-container">
-                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全部</button>
+                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全</button>
                         <button class="filter-btn ${currentConsonantFilter === '中' ? 'active' : ''}" onclick="displayConsonants('中')">🔸 中</button>
                         <button class="filter-btn ${currentConsonantFilter === '高' ? 'active' : ''}" onclick="displayConsonants('高')">🔺 高</button>
                         <button class="filter-btn ${currentConsonantFilter === '低' ? 'active' : ''}" onclick="displayConsonants('低')">🔻 低</button>
@@ -893,7 +893,7 @@ function convertNumbersToThaiText(text) {
                 // 母音模式的篩選器
                 const filterHtml = `
                     <div class="filter-container">
-                        <button class="filter-btn ${currentVowelFilter === 'all' ? 'active' : ''}" onclick="displayVowels('all')">📚 全部</button>
+                        <button class="filter-btn ${currentVowelFilter === 'all' ? 'active' : ''}" onclick="displayVowels('all')">📚 全</button>
                         <button class="filter-btn ${currentVowelFilter === '短母音' ? 'active' : ''}" onclick="displayVowels('短母音')">⚡ 短</button>
                         <button class="filter-btn ${currentVowelFilter === '長母音' ? 'active' : ''}" onclick="displayVowels('長母音')">📏 長</button>
                         <button class="filter-btn ${currentVowelFilter === '特殊母音' ? 'active' : ''}" onclick="displayVowels('特殊母音')">💎 特</button>

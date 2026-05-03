@@ -919,9 +919,10 @@ function showEssayDetail(index) {
         
         <h2 style="color:var(--accent-color); margin-bottom:15px; border-left:6px solid var(--accent-color); padding-left:15px; font-size:1.5rem;">${essay.title}</h2>
         
-        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <span style="font-size:1rem; color:var(--sub-text);">語音工具：</span>
             <button onclick="speak('${essay.content.replace(/\\n/g, ' ')}', this)" style="padding:6px 14px; border-radius:5px; background:var(--accent-color); color:white; border:none; cursor:pointer; font-size:1rem;">🔊 朗讀短文</button>
+            <button onclick="openEssayShadow(${index})" style="padding:6px 14px; border-radius:5px; background:var(--btn-active); color:white; border:none; cursor:pointer; font-size:1rem;">🎙️ 影子跟讀</button>
         </div>
 
         <div style="font-size:1.4rem; line-height:2.3; color:var(--text-color); white-space: pre-wrap; text-align:left; background:var(--card-bg); padding:25px; border-radius:12px; border:1px solid var(--search-border); letter-spacing: 0.8px;">
@@ -1547,6 +1548,66 @@ window.onscroll = function() {
     else btn.style.display = "none";
 };
 
+// ===== 短文影子跟讀 =====
+
+let shadowIsEssayMode = false;
+
+function openEssayShadow(index) {
+    const essay = essayData[index];
+    if (!essay) return;
+
+    // 把短文內容依 \n 拆成句子，過濾空行
+    const sentences = essay.content
+        .split(/\\n/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    if (sentences.length === 0) return;
+
+    // 關閉短文頁，進入影子跟讀
+    closeModal('essay-page');
+
+    shadowIsEssayMode = true;
+    shadowList = sentences.map((s, i) => ({
+        thai: s,
+        chinese: '',   // 短文模式沒有中文對照
+        id: `essay-${index}-${i}`
+    }));
+    shadowIndex = 0;
+    shadowIsAuto = false;
+    shadowRevealed = false;
+
+    // 短文模式：隱藏中文顯示按鈕，顯示全文段落
+    document.getElementById('shadow-reveal-btn').style.display = 'none';
+    document.getElementById('shadow-chinese').style.display = 'none';
+    document.getElementById('shadow-essay-context').style.display = 'block';
+
+    // 標題顯示短文名
+    document.querySelector('.shadow-title').textContent = `🎙️ ${essay.title}`;
+
+    document.getElementById('shadow-mode-overlay').classList.add('active');
+    shadowRender();
+    shadowUpdateEssayContext(sentences);
+}
+
+function shadowUpdateEssayContext(sentences) {
+    // 全文顯示，當前句子高亮
+    const ctx = document.getElementById('shadow-essay-context');
+    if (!ctx || !shadowIsEssayMode) return;
+    ctx.innerHTML = sentences.map((s, i) => {
+        if (i === shadowIndex) {
+            return `<span style="color:var(--text-color); font-weight:bold; background:rgba(52,152,219,0.15); border-radius:4px; padding:0 4px;">${s}</span>`;
+        }
+        return `<span>${s}</span>`;
+    }).join('<br>');
+
+    // 自動捲到當前句
+    const highlighted = ctx.querySelector('span[style*="font-weight:bold"]');
+    if (highlighted) highlighted.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// ===== END 短文影子跟讀 =====
+
 // ===== 影子跟讀模式 =====
 
 let shadowList = [];
@@ -1576,6 +1637,15 @@ function closeShadowMode() {
     shadowStopAuto();
     window.speechSynthesis.cancel();
     document.getElementById('shadow-mode-overlay').classList.remove('active');
+
+    // 重置短文模式狀態
+    if (shadowIsEssayMode) {
+        shadowIsEssayMode = false;
+        document.getElementById('shadow-reveal-btn').style.display = '';
+        document.getElementById('shadow-chinese').style.display = '';
+        document.getElementById('shadow-essay-context').style.display = 'none';
+        document.querySelector('.shadow-title').textContent = '🎙️ 影子跟讀';
+    }
 }
 
 function shadowRender() {
@@ -1682,9 +1752,12 @@ function shadowNext() {
         shadowIndex++;
         shadowRender();
         document.getElementById('shadow-play-btn').textContent = '▶ 播放';
+        if (shadowIsEssayMode) {
+            const sentences = shadowList.map(s => s.thai);
+            shadowUpdateEssayContext(sentences);
+        }
         if (shadowIsAuto) shadowPlayCurrent();
     } else {
-        // 到底了
         shadowStopAuto();
         shadowSetStatus('🎉 全部完成！');
         document.getElementById('shadow-play-btn').textContent = '▶ 播放';
@@ -1699,6 +1772,10 @@ function shadowPrev() {
         shadowIndex--;
         shadowRender();
         document.getElementById('shadow-play-btn').textContent = '▶ 播放';
+        if (shadowIsEssayMode) {
+            const sentences = shadowList.map(s => s.thai);
+            shadowUpdateEssayContext(sentences);
+        }
     }
 }
 
@@ -1749,6 +1826,8 @@ function scrollToTop() {
         <div class="shadow-status" id="shadow-status">準備開始</div>
         <div class="shadow-thai" id="shadow-thai">—</div>
         <div class="shadow-chinese hidden" id="shadow-chinese">—</div>
+        <!-- 短文模式：顯示全文段落，當前句高亮 -->
+        <div id="shadow-essay-context" style="display:none; width:100%; max-width:480px; margin-top:12px; padding:14px 16px; background:var(--card-bg); border-radius:12px; border:1px solid var(--search-border); font-size:1.1rem; line-height:2; color:var(--sub-text); text-align:left; font-family:'Leelawadee UI','Ayuthaya','Thonburi',sans-serif; max-height:160px; overflow-y:auto;"></div>
     </div>
 
     <div class="shadow-controls">

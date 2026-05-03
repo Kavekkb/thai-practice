@@ -324,6 +324,17 @@
             color: white;
         }
 
+        /* 子音底色 */
+        .phonetic-card.cat-中 { background: rgba(100,130,180, 0.13); border-color: rgba(100,130,180,0.3); }
+        .phonetic-card.cat-高 { background: rgba(210,120, 50, 0.12); border-color: rgba(210,120, 50,0.3); }
+        .phonetic-card.cat-低 { background: rgba( 60,160,100, 0.13); border-color: rgba( 60,160,100,0.3); }
+
+        /* 母音底色 */
+        .phonetic-card.cat-短母音   { background: rgba( 60,120,210, 0.12); border-color: rgba( 60,120,210,0.3); }
+        .phonetic-card.cat-長母音   { background: rgba(130, 80,200, 0.12); border-color: rgba(130, 80,200,0.3); }
+        .phonetic-card.cat-特殊母音 { background: rgba(210, 80, 70, 0.12); border-color: rgba(210, 80, 70,0.3); }
+        .phonetic-card.cat-複合母音 { background: rgba( 50,170,110, 0.13); border-color: rgba( 50,170,110,0.3); }
+
         /* ===== 影子跟讀模式 ===== */
         #shadow-mode-overlay {
             display: none;
@@ -1131,7 +1142,7 @@ function convertNumbersToThaiText(text) {
             if (currentMode === 'consonants') {
                 const filterHtml = `
                     <div class="filter-container">
-                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全部</button>
+                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="displayConsonants('all')">📚 全</button>
                         <button class="filter-btn ${currentConsonantFilter === '中' ? 'active' : ''}" onclick="displayConsonants('中')">🔸 中</button>
                         <button class="filter-btn ${currentConsonantFilter === '高' ? 'active' : ''}" onclick="displayConsonants('高')">🔺 高</button>
                         <button class="filter-btn ${currentConsonantFilter === '低' ? 'active' : ''}" onclick="displayConsonants('低')">🔻 低</button>
@@ -1142,7 +1153,7 @@ function convertNumbersToThaiText(text) {
                 // 母音模式的篩選器
                 const filterHtml = `
                     <div class="filter-container">
-                        <button class="filter-btn ${currentVowelFilter === 'all' ? 'active' : ''}" onclick="displayVowels('all')">📚 全部</button>
+                        <button class="filter-btn ${currentVowelFilter === 'all' ? 'active' : ''}" onclick="displayVowels('all')">📚 全</button>
                         <button class="filter-btn ${currentVowelFilter === '短母音' ? 'active' : ''}" onclick="displayVowels('短母音')">⚡ 短</button>
                         <button class="filter-btn ${currentVowelFilter === '長母音' ? 'active' : ''}" onclick="displayVowels('長母音')">📏 長</button>
                         <button class="filter-btn ${currentVowelFilter === '特殊母音' ? 'active' : ''}" onclick="displayVowels('特殊母音')">💎 特</button>
@@ -1171,7 +1182,8 @@ function convertNumbersToThaiText(text) {
                         container.appendChild(grid);
                     }
                     const card = document.createElement('div');
-                    card.className = 'phonetic-card';
+                    const catClass = item.category ? ` cat-${item.category}` : '';
+                    card.className = 'phonetic-card' + catClass;
                     card.id = `card-${index}`;
                     card.innerHTML = `
                         <div class="p-char" lang="th">${item.char}</div>

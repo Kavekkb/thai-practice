@@ -553,6 +553,7 @@
                 <button class="source-btn" onclick="switchSource('anki', this)">Anki</button>
                 <button class="source-btn" onclick="switchSource('line', this)">KruCho</button>
                 <button class="source-btn" onclick="switchSource('self', this)">自建</button>
+                <button class="source-btn" onclick="switchSource('ben', this)">BEN構句</button>
             </div>
         </div>
     <div class="sidebar-section">
@@ -576,11 +577,9 @@
         </div>
 </div>
         <div id="rule-page" class="modal-page" onscroll="rulePageScroll(this)">
-    <div class="modal-content">
-        </div>
+    <div class="modal-content"></div>
 </div>
-    <button id="rule-back-to-top" onclick="document.getElementById('rule-page').scrollTo({top:0,behavior:'smooth'})" style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:9999; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); font-size:1.2rem;">↑</button>
-
+<button id="rule-back-to-top" onclick="document.getElementById('rule-page').scrollTo({top:0,behavior:'smooth'})" style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:9999; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); font-size:1.2rem;">↑</button>
 
 
 <div id="essay-page" class="modal-page">
@@ -640,7 +639,8 @@
             calendar: { name: "月份星期", id: "1685596903" }, 
             anki: { name: "Anki", id: "248374266" }, 
             line: { name: "KruCho", id: "1404447959" },
-            self: { name: "自建", id: "1725449061" }
+            self: { name: "自建", id: "1725449061" },
+            ben: { name: "BEN構句", id: "1048845513" }
             
         };
 
@@ -1695,6 +1695,8 @@ function rulePageScroll(el) {
     const btn = document.getElementById('rule-back-to-top');
     if (btn) btn.style.display = el.scrollTop > 200 ? 'block' : 'none';
 }
+
+// BEN構句頁面的置頂按鈕
 
 // 置頂按鈕邏輯
 window.onscroll = function() {

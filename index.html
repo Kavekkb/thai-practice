@@ -11,7 +11,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰難了สู้ๆนะ</title>
+    <title>泰難了</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -504,7 +504,7 @@
     <p id="error-msg" style="color: red; margin-top: 10px; display: none;">PasswordFail</p>
 </div>
     <div class="header">
-        <div class="app-title">泰難了สู้ๆนะ</div>
+        <div class="app-title">泰難了เรียนภาษาไทย</div>
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
 
@@ -1635,8 +1635,13 @@ function speak(text, btnElement, e) {
         let finalTone = tone ? tone : "";
         return con + "ั" + finalTone + "ม";
     });
-    // 修正：ๆ 只重複前面的詞，不重複整個句子
-    processedText = processedText.replace(/([\u0e00-\u0e7f]+)ๆ/g, '$1 $1');
+    // 修正：ๆ 只重複前面最後一個音節（以母音或尾音為界）
+    processedText = processedText.replace(/([ก-๙a-zA-Z\u0e30-\u0e3a\u0e40-\u0e4e]+)\s*ๆ/g, (match, word) => {
+        // 找最後一個空格分隔的詞，沒有空格就用整個詞
+        const parts = word.split(/\s+/);
+        const lastWord = parts[parts.length - 1];
+        return word + ' ' + lastWord;
+    });
 
     const msg = new SpeechSynthesisUtterance(processedText);
     const voices = window.speechSynthesis.getVoices();

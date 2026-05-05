@@ -671,17 +671,18 @@
         let cardHeight = 144; // 預估卡片高度
         let visibleCards = 10; // 可見卡片數量
 
-function checkPasscode() {
+async function checkPasscode() {
     const input = document.getElementById('passcode').value;
-    // 將所有允許的密碼 Base64 放在陣列中
-    const authorizedPass = [
-        'NTgzNDU4MzRhYUFB', 
-        'MTIzNDQzMjE=',   
-        'dGVzdA=='  // 新增測試密碼 'test'
+    const authorizedHashes = [
+        '9fffb8dea76cd575f50ce2540ea80488147b45b5351fb0e5451700032b67b889',
+        '67727a41b5b1d4dfca981e4045b1bb2f1e7fef0e3e8825c028949d186cad4c00'
     ];
 
-    // 檢查輸入的編碼是否符合陣列中的任何一組
-    if (authorizedPass.includes(btoa(input))) {
+    const encoded = new TextEncoder().encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+    const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (authorizedHashes.includes(hashHex)) {
         document.getElementById('login-overlay').style.display = 'none';
         localStorage.setItem('thai_auth', 'true');
         localStorage.setItem('auth_time', new Date().getTime());
@@ -1658,25 +1659,8 @@ function speak(text, btnElement, e) {
     window.speechSynthesis.speak(msg);
 }
 
-function checkPasscode() {
-    const input = document.getElementById('passcode').value;
-    // 這裡放妳所有允許的 Base64 密碼陣列
-    const authorizedPass = [
-        'NTgzNDU4MzRhYUFB', // 第一組
-        'MTIzNDQzMjE='      // 12344321
-    ];
 
-    // 改成用 .includes 檢查「輸入的密碼轉碼後」是否在陣列名單中
-    if (authorizedPass.includes(btoa(input))) {
-        document.getElementById('login-overlay').style.display = 'none';
-        localStorage.setItem('thai_auth', 'true');
-        localStorage.setItem('auth_time', new Date().getTime());
-    } else {
-        const errorMsg = document.getElementById('error-msg');
-        errorMsg.style.display = 'block';
-        document.getElementById('passcode').value = '';
-    }
-}
+
 
 // 頁面載入時的總初始化
 window.addEventListener('load', () => {

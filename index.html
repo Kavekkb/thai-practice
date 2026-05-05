@@ -1635,20 +1635,12 @@ function speak(text, btnElement, e) {
         let finalTone = tone ? tone : "";
         return con + "ั" + finalTone + "ม";
     });
-    // 修正：ๆ 只重複前面最後一個音節
-    function getLastThaiSyllable(word) {
-        const consonants = /[\u0e01-\u0e2e]/g;
-        let positions = [];
-        let m;
-        while ((m = consonants.exec(word)) !== null) positions.push(m.index);
-        if (positions.length === 0) return word;
-        const startConsonant = positions.length >= 2 ? positions[positions.length - 2] : positions[0];
-        let start = startConsonant;
-        if (start > 0 && /[\u0e40-\u0e44\u0e2d]/.test(word[start-1])) start--;
-        return word.slice(start);
-    }
-    processedText = processedText.replace(/([\u0e00-\u0e7f]+)\s*ๆ/g, (match, word) => {
-        return word + ' ' + getLastThaiSyllable(word);
+    // ๆ 處理：有空格則重複最後一個詞，沒空格則整個詞重複
+    processedText = processedText.replace(/([\u0e00-\u0e7f][\u0e00-\u0e7f\s]*?)\s*ๆ/g, (match, word) => {
+        const trimmed = word.trim();
+        const parts = trimmed.split(/\s+/);
+        const repeat = parts[parts.length - 1];
+        return trimmed + ' ' + repeat;
     });
 
     const msg = new SpeechSynthesisUtterance(processedText);

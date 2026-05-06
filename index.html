@@ -978,7 +978,7 @@ async function openEssayListPage() {
                         <div onclick="showEssayDetail(${essayData.length - 1})" style="background:var(--card-bg); padding:18px; border-radius:10px; margin-bottom:12px; border:1px solid var(--search-border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: 0.3s;">
                             <div>
                                 ${source ? `<div style="font-size:0.78rem; color:var(--sub-text); margin-bottom:4px;">📂 ${source}</div>` : ''}
-                                <span style="font-size:1.1rem; font-weight:bold; color:var(--text-color);">■ ${title}</span>
+                                <span style="font-size:1.1rem; font-weight:bold; color:var(--text-color);">${title}</span>
                             </div>
                             <span style="color:var(--accent-color); flex-shrink:0; margin-left:10px;">閱讀更多 ❯</span>
                         </div>`;

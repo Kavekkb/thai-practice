@@ -495,7 +495,7 @@
 </head>
 <body>
 <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
-    <h2 style="margin-bottom: 20px; font-family: sans-serif; color: #333;">🇹🇭 密碼私私私私私私</h2>
+    <h2 style="margin-bottom: 20px; font-family: sans-serif; color: #333;">🇹🇭 JustForFun</h2>
     
     <input type="password" id="passcode" placeholder="EnterPassword" style="padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; width: 200px; text-align: center; color: #000; background: #fff;">
     
@@ -1592,10 +1592,10 @@ function convertNumbersToThaiText(text) {
                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     card.style.borderColor = 'var(--btn-active)';
                 }
-                await speakPromise(item.thai);
+                await speakPromise(item.thai.replace(/\*\*(.*?)\*\*/g, '$1'));
                 if (!isAutoplay) break;
                 await new Promise(r => setTimeout(r, 500));
-                await speakPromise(item.thai);
+                await speakPromise(item.thai.replace(/\*\*(.*?)\*\*/g, '$1'));
                 if(card) card.style.borderColor = 'rgba(0,0,0,0.05)';
                 await new Promise(r => setTimeout(r, 1000));
                 if (i === currentDisplayedList.length - 1) stopAutoplay();
@@ -1839,7 +1839,7 @@ async function shadowPlayCurrent() {
     if (!item) return;
 
     const isPhonetic = item.char && item.roman;
-    const thaiText = isPhonetic ? item.char : item.thai;
+    const thaiText = (isPhonetic ? item.char : item.thai).replace(/\*\*(.*?)\*\*/g, '$1');
     const speed = parseFloat(document.getElementById('shadow-speed').value);
     const gap   = parseInt(document.getElementById('shadow-gap').value);
 

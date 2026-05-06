@@ -1231,8 +1231,8 @@ function convertNumbersToThaiText(text) {
                 div.innerHTML = `
                     <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFav('${item.id || item.char}', this, event)">★</button>
                     <div class="card-content">
-                        <div class="thai" lang="th">${thaiText}</div>
-                        <div class="chinese">${chineseText}</div>
+                        <div class="thai" lang="th">${highlight(thaiText)}</div>
+                        <div class="chinese">${highlight(chineseText)}</div>
                     </div>
                     <div class="card-action">
                         <button class="btn-speak" onclick="${hasAudioUrl ? `playAudio('${item.audioUrl}', this, event)` : `speak('${speakText}', this, event)`}">🔊</button>
@@ -1241,6 +1241,10 @@ function convertNumbersToThaiText(text) {
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function highlight(text) {
+            return text.replace(/==(.*?)==/g, '<span style="color:var(--btn-active); font-weight:bold;">$1</span>');
         }
 
         function toggleFav(id, btn, e) {

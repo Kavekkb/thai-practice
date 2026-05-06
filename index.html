@@ -1244,7 +1244,7 @@ function convertNumbersToThaiText(text) {
         }
 
         function highlight(text) {
-            return text.replace(/==(.*?)==/g, '<span style="color:var(--btn-active); font-weight:bold;">$1</span>');
+            return text.replace(/\*\*(.*?)\*\*/g, '<span style="color:var(--btn-active); font-weight:bold;">$1</span>');
         }
 
         function toggleFav(id, btn, e) {

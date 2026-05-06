@@ -1223,7 +1223,7 @@ function convertNumbersToThaiText(text) {
                 const thaiText = item.thai;
                 const chineseText = item.chinese;
                 const sourceText = item.source;
-                const speakText = thaiText;
+                const speakText = thaiText.replace(/\*\*(.*?)\*\*/g, '$1');
                 
                 // 檢查是否有外部音檔 (母音使用)
                 const hasAudioUrl = item.audioUrl && item.audioUrl.trim() !== '';

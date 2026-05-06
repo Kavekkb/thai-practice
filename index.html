@@ -1715,7 +1715,7 @@ function openEssayShadow(index) {
     // 把短文內容依 \n 拆成句子，過濾空行
     const sentences = essay.content
         .split(/\\n|\r?\n/)
-        .map(s => s.trim())
+        .map(s => s.trim().replace(/\*\*(.*?)\*\*/g, '$1'))
         .filter(s => s.length > 0);
 
     if (sentences.length === 0) return;
@@ -1725,7 +1725,7 @@ function openEssayShadow(index) {
 
     shadowIsEssayMode = true;
     shadowList = sentences.map((s, i) => ({
-        thai: s,
+        thai: s.replace(/\*\*(.*?)\*\*/g, '$1'),
         chinese: '',   // 短文模式沒有中文對照
         id: `essay-${index}-${i}`,
         audioUrl: ''

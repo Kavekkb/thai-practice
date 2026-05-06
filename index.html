@@ -495,7 +495,7 @@
 </head>
 <body>
 <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
-    <h2 style="margin-bottom: 20px; font-family: sans-serif; color: #333;">🇹🇭 JustForFun</h2>
+    <h2 style="margin-bottom: 20px; font-family: sans-serif; color: #333;">🇹🇭 密碼私私私私私私</h2>
     
     <input type="password" id="passcode" placeholder="EnterPassword" style="padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; width: 200px; text-align: center; color: #000; background: #fff;">
     
@@ -1810,8 +1810,8 @@ function shadowRender() {
     if (!item) return;
 
     const isPhonetic = item.char && item.roman;
-    const thaiText  = isPhonetic ? item.char  : item.thai;
-    const zhText    = isPhonetic ? item.roman  : item.chinese;
+    const thaiText  = (isPhonetic ? item.char  : item.thai).replace(/\*\*(.*?)\*\*/g, '$1');
+    const zhText    = (isPhonetic ? item.roman  : item.chinese).replace(/\*\*(.*?)\*\*/g, '$1');
 
     document.getElementById('shadow-thai').textContent    = thaiText;
     document.getElementById('shadow-chinese').textContent = zhText;

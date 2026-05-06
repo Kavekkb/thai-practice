@@ -974,11 +974,16 @@ async function openEssayListPage() {
 
                 if (title && content) {
                     essayData.push({ source, title, content, spotifyUrl, audioUrl });
+                    // 把 title 裡的換行（Alt+Enter）拆成泰文標題 + 中文翻譯
+                    const titleLines = title.replace(/\r/g, '').split('\n');
+                    const titleThai = titleLines[0] || '';
+                    const titleZh   = titleLines[1] || '';
                     html += `
                         <div onclick="showEssayDetail(${essayData.length - 1})" style="background:var(--card-bg); padding:18px; border-radius:10px; margin-bottom:12px; border:1px solid var(--search-border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: 0.3s;">
                             <div>
                                 ${source ? `<div style="font-size:0.78rem; color:var(--sub-text); margin-bottom:4px;">📂 ${source}</div>` : ''}
-                                <span style="font-size:1.1rem; font-weight:bold; color:var(--text-color);">${title}</span>
+                                <span style="font-size:1.1rem; font-weight:bold; color:var(--text-color);">${titleThai}</span>
+                                ${titleZh ? `<div style="font-size:0.85rem; color:var(--sub-text); margin-top:3px;">${titleZh}</div>` : ''}
                             </div>
                             <span style="color:var(--accent-color); flex-shrink:0; margin-left:10px;">閱讀更多 ❯</span>
                         </div>`;
@@ -1017,7 +1022,10 @@ function showEssayDetail(index) {
         </div>
         
         ${essay.source ? `<div style="font-size:0.8rem; color:var(--sub-text); margin-bottom:6px;">📂 ${essay.source}</div>` : ''}
-        <h2 style="color:var(--accent-color); margin-bottom:15px; border-left:6px solid var(--accent-color); padding-left:15px; font-size:1.5rem;">${essay.title}</h2>
+        <h2 style="color:var(--accent-color); margin-bottom:15px; border-left:6px solid var(--accent-color); padding-left:15px; font-size:1.5rem;">
+            ${essay.title.replace(/\r/g, '').split('\n')[0]}
+            ${essay.title.replace(/\r/g, '').split('\n')[1] ? `<div style="font-size:1rem; color:var(--sub-text); font-weight:normal; margin-top:4px;">${essay.title.replace(/\r/g, '').split('\n')[1]}</div>` : ''}
+        </h2>
         
         <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <span style="font-size:1rem; color:var(--sub-text);">語音工具：</span>

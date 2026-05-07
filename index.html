@@ -561,6 +561,7 @@
     <button id="btn-vowels" class="side-full-btn" onclick="openVowelsPage()">🔠 母音</button>
     <button id="btn-rules" class="side-full-btn" onclick="openRulePage()">📖 惡補一下</button>
     <button id="btn-essays" class="side-full-btn" onclick="openEssayListPage()">📝 閱讀短文</button>
+    <button id="btn-lyrics" class="side-full-btn" onclick="openLyricsListPage()">🎵 歌詞跟讀</button>
 </div>
         <div class="sidebar-section">
             <span class="sidebar-label">系統與說明</span>
@@ -580,6 +581,20 @@
 </div>
 <button id="rule-back-to-top" onclick="document.getElementById('rule-page').scrollTo({top:0,behavior:'smooth'})" style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:9999; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); font-size:1.2rem;">↑</button>
 
+
+<!-- 歌詞跟讀 Modal -->
+<div id="lyrics-list-page" class="modal-page">
+    <div class="modal-content" style="max-width:800px;">
+        <div id="lyrics-list-content"></div>
+    </div>
+</div>
+
+<div id="lyrics-reader-page" class="modal-page" onscroll="lyricsPageScroll(this)">
+    <div class="modal-content" style="max-width:800px;">
+        <div id="lyrics-reader-content"></div>
+    </div>
+</div>
+<button id="lyrics-back-to-top" onclick="document.getElementById('lyrics-reader-page').scrollTo({top:0,behavior:'smooth'})" style="position:fixed; bottom:20px; right:20px; width:45px; height:45px; border-radius:50%; background:var(--btn-active); color:white; border:none; display:none; z-index:9999; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); font-size:1.2rem;">↑</button>
 
 <div id="essay-page" class="modal-page">
     <div class="modal-content" style="max-width: 800px;">
@@ -1763,6 +1778,205 @@ function shadowUpdateEssayContext(sentences) {
 }
 
 // ===== END 短文影子跟讀 =====
+
+// ===== 歌詞跟讀 =====
+const LYRICS_GID = '1481101589';
+let lyricsData = [];
+let lyricsSongs = [];
+let lyricsIndex = 0;
+let lyricsLines = [];
+let lyricsIsAuto = false;
+let lyricsIsPlaying = false;
+let lyricsSpeed = 0.8;
+
+function lyricsPageScroll(el) {
+    const btn = document.getElementById('lyrics-back-to-top');
+    if (btn) btn.style.display = el.scrollTop > 200 ? 'block' : 'none';
+}
+
+async function openLyricsListPage() {
+    const modal = document.getElementById('lyrics-list-page');
+    const container = document.getElementById('lyrics-list-content');
+    container.innerHTML = '<div style="text-align:center;padding:20px;">🎵 載入歌曲清單...</div>';
+    modal.style.display = 'flex';
+
+    try {
+        const res = await fetch(`${base_url}&gid=${LYRICS_GID}&t=${Date.now()}`);
+        const csv = await res.text();
+        const rows = parseCSVMultiline(csv).slice(1);
+
+        lyricsData = rows
+            .map(cols => ({
+                song:   cols[0]?.replace(/"/g,'').trim(),
+                artist: cols[1]?.replace(/"/g,'').trim(),
+                audio:  cols[2]?.replace(/"/g,'').trim(),
+                thai:   cols[3]?.replace(/"/g,'').trim(),
+            }))
+            .filter(r => r.song && r.thai);
+
+        const seen = new Set();
+        lyricsSongs = [];
+        lyricsData.forEach(r => {
+            if (!seen.has(r.song)) {
+                seen.add(r.song);
+                lyricsSongs.push({ song: r.song, artist: r.artist, audio: r.audio });
+            }
+        });
+
+        let html = `<h2 style="text-align:center;color:var(--accent-color);margin-bottom:20px;">🎵 歌詞跟讀</h2>`;
+        if (lyricsSongs.length === 0) {
+            html += '<p style="text-align:center;">目前沒有歌曲資料</p>';
+        } else {
+            lyricsSongs.forEach(s => {
+                html += `
+                <div onclick="openLyricsReader('${s.song.replace(/'/g,"\\'")}')"
+                     style="background:var(--card-bg);padding:18px;border-radius:10px;margin-bottom:12px;border:1px solid var(--search-border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:bold;color:var(--text-color);">🎵 ${s.song}</div>
+                        ${s.artist ? `<div style="font-size:0.85rem;color:var(--sub-text);margin-top:3px;">${s.artist}</div>` : ''}
+                    </div>
+                    <span style="color:var(--accent-color);flex-shrink:0;margin-left:10px;">開始 ❯</span>
+                </div>`;
+            });
+        }
+        html += `<button onclick="closeModal('lyrics-list-page')" style="margin-top:10px;width:100%;padding:12px;border-radius:8px;background:var(--btn-inactive);color:white;border:none;cursor:pointer;font-weight:bold;">返回</button>`;
+        container.innerHTML = html;
+
+    } catch(e) {
+        container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--danger-color);">載入失敗，請確認試算表已發佈<br><button onclick="closeModal('lyrics-list-page')" style="margin-top:15px;">關閉</button></div>`;
+    }
+}
+
+function openLyricsReader(songName) {
+    lyricsLines = lyricsData.filter(r => r.song === songName);
+    if (lyricsLines.length === 0) return;
+
+    lyricsIndex = 0;
+    lyricsIsAuto = false;
+    lyricsIsPlaying = false;
+    window.speechSynthesis.cancel();
+
+    closeModal('lyrics-list-page');
+    const modal = document.getElementById('lyrics-reader-page');
+    modal.style.display = 'flex';
+    lyricsRenderReader(songName);
+}
+
+function lyricsRenderReader(songName) {
+    const container = document.getElementById('lyrics-reader-content');
+    const audioUrl = lyricsLines[0]?.audio || '';
+
+    const lyricsHTML = lyricsLines.map((line, i) => `
+        <div id="lyric-line-${i}" onclick="lyricsGoTo(${i})"
+             style="padding:12px 16px;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:0.2s;
+                    ${i === 0 ? 'background:rgba(52,152,219,0.15);border-left:4px solid var(--accent-color);font-weight:bold;color:var(--text-color);' : 'color:var(--sub-text);border-left:4px solid transparent;'}
+                    font-size:1.25rem;line-height:1.9;">
+            ${line.thai}
+        </div>`).join('');
+
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <button onclick="window.speechSynthesis.cancel();closeModal('lyrics-reader-page');openLyricsListPage();" style="background:none;border:none;color:var(--accent-color);cursor:pointer;font-size:1.1rem;">❮ 返回清單</button>
+            ${audioUrl ? `<a href="${audioUrl}" target="_blank" style="color:var(--accent-color);font-size:1.5rem;text-decoration:none;" title="開啟原曲連結">🔗</a>` : ''}
+        </div>
+        <h2 style="color:var(--accent-color);margin-bottom:4px;font-size:1.4rem;">🎵 ${songName}</h2>
+        <div style="font-size:0.85rem;color:var(--sub-text);margin-bottom:18px;">${lyricsLines[0]?.artist || ''}</div>
+
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px;background:var(--card-bg);padding:12px;border-radius:10px;border:1px solid var(--search-border);">
+            <button id="lyrics-play-btn" onclick="lyricsPlay()" style="padding:8px 16px;border-radius:8px;background:var(--btn-active);color:white;border:none;cursor:pointer;font-size:1rem;">▶ 播放</button>
+            <button id="lyrics-auto-btn" onclick="lyricsToggleAuto()" style="padding:8px 16px;border-radius:8px;background:var(--btn-inactive);color:white;border:none;cursor:pointer;font-size:1rem;">🔁 自動</button>
+            <button onclick="lyricsGoTo(Math.max(0,lyricsIndex-1))" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--text-color);border:1px solid var(--search-border);cursor:pointer;">◀ 上一句</button>
+            <button onclick="lyricsGoTo(Math.min(lyricsLines.length-1,lyricsIndex+1))" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--text-color);border:1px solid var(--search-border);cursor:pointer;">下一句 ▶</button>
+            <label style="color:var(--text-color);font-size:0.9rem;">速度
+                <select id="lyrics-speed" onchange="lyricsSpeed=parseFloat(this.value)" style="margin-left:6px;padding:4px;border-radius:6px;border:1px solid var(--search-border);background:var(--card-bg);color:var(--text-color);">
+                    <option value="0.6">0.6x</option>
+                    <option value="0.8" selected>0.8x</option>
+                    <option value="1.0">1.0x</option>
+                    <option value="1.2">1.2x</option>
+                </select>
+            </label>
+            <span id="lyrics-progress" style="color:var(--sub-text);font-size:0.9rem;margin-left:auto;">1 / ${lyricsLines.length}</span>
+        </div>
+
+        <div id="lyrics-lines-container">${lyricsHTML}</div>
+    `;
+}
+
+function lyricsUpdateHighlight() {
+    lyricsLines.forEach((_, i) => {
+        const el = document.getElementById(`lyric-line-${i}`);
+        if (!el) return;
+        if (i === lyricsIndex) {
+            el.style.background = 'rgba(52,152,219,0.15)';
+            el.style.borderLeft = '4px solid var(--accent-color)';
+            el.style.fontWeight = 'bold';
+            el.style.color = 'var(--text-color)';
+            el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+            el.style.background = '';
+            el.style.borderLeft = '4px solid transparent';
+            el.style.fontWeight = '';
+            el.style.color = 'var(--sub-text)';
+        }
+    });
+    const prog = document.getElementById('lyrics-progress');
+    if (prog) prog.textContent = `${lyricsIndex+1} / ${lyricsLines.length}`;
+}
+
+function lyricsGoTo(i) {
+    window.speechSynthesis.cancel();
+    lyricsIsPlaying = false;
+    lyricsIsAuto = false;
+    const autoBtn = document.getElementById('lyrics-auto-btn');
+    if (autoBtn) { autoBtn.style.background = 'var(--btn-inactive)'; autoBtn.textContent = '🔁 自動'; }
+    lyricsIndex = i;
+    lyricsUpdateHighlight();
+}
+
+async function lyricsPlay() {
+    if (lyricsIsPlaying) {
+        window.speechSynthesis.cancel();
+        lyricsIsPlaying = false;
+        const btn = document.getElementById('lyrics-play-btn');
+        if (btn) btn.textContent = '▶ 播放';
+        return;
+    }
+    const line = lyricsLines[lyricsIndex];
+    if (!line) return;
+
+    lyricsIsPlaying = true;
+    const btn = document.getElementById('lyrics-play-btn');
+    if (btn) btn.textContent = '⏸ 播放中';
+
+    await shadowSpeak(line.thai.replace(/\*\*(.*?)\*\*/g, '$1'), lyricsSpeed);
+
+    lyricsIsPlaying = false;
+    if (btn) btn.textContent = '▶ 播放';
+
+    if (lyricsIsAuto) {
+        await new Promise(r => setTimeout(r, 800));
+        if (lyricsIsAuto && lyricsIndex < lyricsLines.length - 1) {
+            lyricsIndex++;
+            lyricsUpdateHighlight();
+            lyricsPlay();
+        } else if (lyricsIndex >= lyricsLines.length - 1) {
+            lyricsIsAuto = false;
+            const autoBtn = document.getElementById('lyrics-auto-btn');
+            if (autoBtn) { autoBtn.style.background = 'var(--btn-inactive)'; autoBtn.textContent = '🔁 自動'; }
+        }
+    }
+}
+
+function lyricsToggleAuto() {
+    lyricsIsAuto = !lyricsIsAuto;
+    const btn = document.getElementById('lyrics-auto-btn');
+    if (btn) {
+        btn.style.background = lyricsIsAuto ? 'var(--btn-active)' : 'var(--btn-inactive)';
+        btn.textContent = lyricsIsAuto ? '🔁 自動中' : '🔁 自動';
+    }
+    if (lyricsIsAuto && !lyricsIsPlaying) lyricsPlay();
+}
+// ===== END 歌詞跟讀 =====
 
 
 let shadowList = [];

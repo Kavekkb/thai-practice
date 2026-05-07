@@ -11,7 +11,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰難了เรียนภาษาไทย</title>
+    <title>泰難了</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -495,7 +495,7 @@
 </head>
 <body>
 <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
-    <h2 style="margin-bottom: 20px; font-family: sans-serif; color: #333;">🇹🇭 เรียนภาษาไทย</h2>
+    <h2 style="margin-bottom: 20px; font-family: sans-serif; color: #333;">🇹🇭 JustForFun</h2>
     
     <input type="password" id="passcode" placeholder="EnterPassword" style="padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; width: 200px; text-align: center; color: #000; background: #fff;">
     
@@ -588,8 +588,18 @@
     </div>
 </div>
 
-    <div id="settings-page" class="modal-page">
-        <div class="modal-content">
+<!-- YouGlish Modal -->
+<div id="youglish-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--card-bg); border-radius:14px; padding:20px; width:90%; max-width:700px; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span id="youglish-title" style="font-size:1.1rem; font-weight:bold; color:var(--accent-color);">🎬 YouGlish</span>
+            <button onclick="closeYouglish()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text-color);">✕</button>
+        </div>
+        <div id="youglish-container"></div>
+    </div>
+</div>
+
+    <div id="settings-page" class="modal-page">        <div class="modal-content">
             <h2 style="text-align:center">⚙️ 偏好設定</h2>
             <div class="setting-group">
                 <span class="sidebar-label">🌓 主題切換</span>
@@ -1235,8 +1245,9 @@ function convertNumbersToThaiText(text) {
                         <div class="chinese">${highlight(chineseText)}</div>
                     </div>
                     <div class="card-action">
-                        <button class="btn-speak" onclick="${hasAudioUrl ? `playAudio('${item.audioUrl}', this, event)` : `speak('${speakText}', this, event)`}">🔊</button>
                         <div class="source-tag">${sourceText}</div>
+                        <button class="btn-speak" onclick="${hasAudioUrl ? `playAudio('${item.audioUrl}', this, event)` : `speak('${speakText}', this, event)`}">🔊</button>
+                        <button class="btn-speak" onclick="openYouglish('${speakText}', event)" style="color:#ff0000;">🎬</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -1765,7 +1776,32 @@ function shadowUpdateEssayContext(sentences) {
 
 // ===== END 短文影子跟讀 =====
 
-// ===== 影子跟讀模式 =====
+// ===== YouGlish =====
+function openYouglish(word, e) {
+    if (e) e.stopPropagation();
+    const clean = word.replace(/\*\*(.*?)\*\*/g, '$1').trim();
+    document.getElementById('youglish-title').textContent = `🎬 YouGlish — ${clean}`;
+    document.getElementById('youglish-container').innerHTML = `
+        <div id="widget1"></div>
+        <script src="https://youglish.com/public/emb/widget.js" onload="
+            new YG.Widget('widget1', {
+                width: '100%',
+                components: 16,
+                lang: 'thai',
+                query: '${clean}'
+            });
+        "><\/script>
+    `;
+    document.getElementById('youglish-modal').style.display = 'flex';
+}
+
+function closeYouglish() {
+    document.getElementById('youglish-modal').style.display = 'none';
+    document.getElementById('youglish-container').innerHTML = '';
+}
+// ===== END YouGlish =====
+
+
 
 let shadowList = [];
 let shadowIndex = 0;

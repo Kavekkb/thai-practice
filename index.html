@@ -1256,7 +1256,7 @@ function convertNumbersToThaiText(text) {
                 const thaiText = item.thai;
                 const chineseText = item.chinese;
                 const sourceText = item.source;
-                const speakText = thaiText;
+                const speakText = thaiText.replace(/\*\*(.*?)\*\*/g, '$1');
                 
                 // 檢查是否有外部音檔 (母音使用)
                 const hasAudioUrl = item.audioUrl && item.audioUrl.trim() !== '';
@@ -1619,10 +1619,10 @@ function convertNumbersToThaiText(text) {
                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     card.style.borderColor = 'var(--btn-active)';
                 }
-                await speakPromise(item.thai);
+                await speakPromise(item.thai.replace(/\*\*(.*?)\*\*/g, '$1'));
                 if (!isAutoplay) break;
                 await new Promise(r => setTimeout(r, 500));
-                await speakPromise(item.thai);
+                await speakPromise(item.thai.replace(/\*\*(.*?)\*\*/g, '$1'));
                 if(card) card.style.borderColor = 'rgba(0,0,0,0.05)';
                 await new Promise(r => setTimeout(r, 1000));
                 if (i === currentDisplayedList.length - 1) stopAutoplay();
@@ -1837,8 +1837,8 @@ function shadowRender() {
     if (!item) return;
 
     const isPhonetic = item.char && item.roman;
-    const thaiText  = isPhonetic ? item.char  : item.thai;
-    const zhText    = isPhonetic ? item.roman  : item.chinese;
+    const thaiText  = (isPhonetic ? item.char  : item.thai).replace(/\*\*(.*?)\*\*/g, '$1');
+    const zhText    = (isPhonetic ? item.roman  : item.chinese).replace(/\*\*(.*?)\*\*/g, '$1');
 
     document.getElementById('shadow-thai').textContent    = thaiText;
     document.getElementById('shadow-chinese').textContent = zhText;
@@ -1866,7 +1866,7 @@ async function shadowPlayCurrent() {
     if (!item) return;
 
     const isPhonetic = item.char && item.roman;
-    const thaiText = isPhonetic ? item.char : item.thai;
+    const thaiText = (isPhonetic ? item.char : item.thai).replace(/\*\*(.*?)\*\*/g, '$1');
     const speed = parseFloat(document.getElementById('shadow-speed').value);
     const gap   = parseInt(document.getElementById('shadow-gap').value);
 

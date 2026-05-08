@@ -767,21 +767,48 @@ function toggleArtFont() {
 }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         
-        async function openPhoneticsCombinedPage(filter = 'all') {
-            // 若資料還沒抓，同時抓子音和母音
+        let currentPhoneticTab = 'consonant'; // 'consonant' | 'vowel'
+
+        function switchPhoneticTab(tab) {
+            currentPhoneticTab = tab;
+            const defaultFilter = tab === 'consonant' ? 'consonant-all' : 'vowel-all';
+            openPhoneticsCombinedPage(defaultFilter);
+        }
+
+        async function openPhoneticsCombinedPage(filter = 'consonant-all') {
             if (consonantsData.length === 0) await fetchPhoneticData();
             if (vowelsData.length === 0) await fetchVowelsData();
 
             currentMode = 'phonetics-combined';
             currentConsonantFilter = filter;
 
-            const combined = [...consonantsData, ...vowelsData];
-            const filtered = filter === 'all' ? combined : combined.filter(item => item.category === filter);
-            renderList(filtered);
+            // 根據 filter 決定 tab 和資料來源
+            const vowelFilters = ['vowel-all','短母音','長母音','特殊母音','複合母音'];
+            if (vowelFilters.includes(filter)) {
+                currentPhoneticTab = 'vowel';
+            } else {
+                currentPhoneticTab = 'consonant';
+            }
 
-            const label = filter === 'all' ? '子音母音' : filter;
-            document.getElementById('search-info').innerText = `${label} ${filtered.length} 個`;
-            toggleSidebar();
+            let data;
+            if (filter === 'consonant-all') {
+                data = consonantsData;
+            } else if (filter === 'vowel-all') {
+                data = vowelsData;
+            } else {
+                const pool = vowelFilters.includes(filter) ? vowelsData : consonantsData;
+                data = pool.filter(item => item.category === filter);
+            }
+
+            renderList(data);
+
+            const labelMap = { 'consonant-all':'子音全部', 'vowel-all':'母音全部' };
+            const label = labelMap[filter] || filter;
+            document.getElementById('search-info').innerText = `${label} ${data.length} 個`;
+
+            // 只在側邊欄開著時才關閉
+            const sb = document.getElementById('sidebar');
+            if (sb.classList.contains('open')) toggleSidebar();
         }
 
 
@@ -1139,16 +1166,36 @@ function convertNumbersToThaiText(text) {
             
             // 篩選器
             if (currentMode === 'phonetics-combined') {
+                const isConsonantFilter = ['all','中','高','低'].includes(currentConsonantFilter) || currentPhoneticTab === 'consonant';
+                const tab = currentPhoneticTab || 'consonant';
                 const filterHtml = `
+                    <div style="display:flex;gap:8px;margin-bottom:8px;justify-content:center;">
+                        <button onclick="switchPhoneticTab('consonant')"
+                            style="flex:1;max-width:140px;padding:10px;border-radius:10px;border:none;cursor:pointer;font-weight:bold;font-size:1rem;
+                                   background:${tab==='consonant' ? 'var(--btn-active)' : 'var(--btn-inactive)'};
+                                   color:${tab==='consonant' ? 'white' : 'var(--text-color)'};">
+                            🔤 子音
+                        </button>
+                        <button onclick="switchPhoneticTab('vowel')"
+                            style="flex:1;max-width:140px;padding:10px;border-radius:10px;border:none;cursor:pointer;font-weight:bold;font-size:1rem;
+                                   background:${tab==='vowel' ? 'var(--btn-active)' : 'var(--btn-inactive)'};
+                                   color:${tab==='vowel' ? 'white' : 'var(--text-color)'};">
+                            🔠 母音
+                        </button>
+                    </div>
                     <div class="filter-container">
-                        <button class="filter-btn ${currentConsonantFilter === 'all' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('all')">📚 全部</button>
-                        <button class="filter-btn ${currentConsonantFilter === '中' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('中')">🔸 中</button>
-                        <button class="filter-btn ${currentConsonantFilter === '高' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('高')">🔺 高</button>
-                        <button class="filter-btn ${currentConsonantFilter === '低' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('低')">🔻 低</button>
-                        <button class="filter-btn ${currentConsonantFilter === '短母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('短母音')">⚡ 短</button>
-                        <button class="filter-btn ${currentConsonantFilter === '長母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('長母音')">📏 長</button>
-                        <button class="filter-btn ${currentConsonantFilter === '特殊母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('特殊母音')">💎 特</button>
-                        <button class="filter-btn ${currentConsonantFilter === '複合母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('複合母音')">🔗 複</button>
+                        ${tab === 'consonant' ? `
+                            <button class="filter-btn ${currentConsonantFilter === 'consonant-all' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('consonant-all')">📚 全部</button>
+                            <button class="filter-btn ${currentConsonantFilter === '中' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('中')">🔸 中</button>
+                            <button class="filter-btn ${currentConsonantFilter === '高' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('高')">🔺 高</button>
+                            <button class="filter-btn ${currentConsonantFilter === '低' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('低')">🔻 低</button>
+                        ` : `
+                            <button class="filter-btn ${currentConsonantFilter === 'vowel-all' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('vowel-all')">📚 全部</button>
+                            <button class="filter-btn ${currentConsonantFilter === '短母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('短母音')">⚡ 短</button>
+                            <button class="filter-btn ${currentConsonantFilter === '長母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('長母音')">📏 長</button>
+                            <button class="filter-btn ${currentConsonantFilter === '特殊母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('特殊母音')">💎 特</button>
+                            <button class="filter-btn ${currentConsonantFilter === '複合母音' ? 'active' : ''}" onclick="openPhoneticsCombinedPage('複合母音')">🔗 複</button>
+                        `}
                     </div>
                 `;
                 container.innerHTML = filterHtml;
@@ -1253,8 +1300,7 @@ function convertNumbersToThaiText(text) {
             quizCount = parseInt(localStorage.getItem('thai_quiz_count')) || 10;
             if (currentMode === 'random') displayRandom();
             else if (currentMode === 'fav') showFavorites(document.getElementById('btn-fav'));
-            else if (currentMode === 'phonetics-combined') openPhoneticsCombinedPage(currentConsonantFilter);
-            else switchSource(currentMode, null);
+            else if (currentMode === 'phonetics-combined') openPhoneticsCombinedPage(currentConsonantFilter);            else switchSource(currentMode, null);
         }
 
         function displayRandom() {
